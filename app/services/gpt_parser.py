@@ -25,7 +25,7 @@ Campos requeridos:
 - producto (ej: 'IPA', 'APA')
 - formato (ej: 'barril', 'botella')
 - volumen_litros (número en litros, ej: 50.0)
-- lote (texto)
+- lote (numer entero)
 - cliente (nombre)
 - responsable (usuario que lo envía: '{user}')
 - id_barril (solo si el formato es 'barril', número entero)
@@ -45,6 +45,12 @@ Devolvé solo un JSON limpio, estrictamente válido, sin comentarios ni explicac
         )
 
         contenido = response.choices[0].message.content
+        if not contenido or not contenido.strip():
+            return {
+                "ok": False,
+                "error": "Respuesta vacía de la API de OpenAI",
+                "datos": {}
+            }
         datos = json.loads(contenido)  # ⚠️ puede reemplazarse por json.loads() si es formato válido
 
         # Validación: todos los campos presentes
