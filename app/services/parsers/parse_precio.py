@@ -14,6 +14,7 @@ Campos requeridos:
 - producto (por ejemplo: APA, IPA, cualquier estilo)
 - formato (por ejemplo: botella o barril)
 - precio_litro (valor numérico en reales)
+- mensaje_original (el mensaje original completo)
 
 Ejemplo de mensaje:
 "El precio por litro en botella de cualquier estilo es 25 reales."
@@ -25,6 +26,7 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
 """
 
     try:
+        print("[DEBUG] Enviando prompt a OpenAI:", prompt)
         response = await openai.ChatCompletion.acreate(
             model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
@@ -32,6 +34,7 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
         )
 
         contenido = response.choices[0].message.content
+        print("[DEBUG] Respuesta de OpenAI:", contenido)
 
         # Limpia bloques de markdown tipo ```json ... ```
         if contenido.strip().startswith("```"):
@@ -39,15 +42,15 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
                 line for line in contenido.strip().splitlines()
                 if not line.strip().startswith("```")
             )
+            print("[DEBUG] Contenido limpio:", contenido)
 
         datos = json.loads(contenido)
-
-        # Agrega el mensaje original si no fue incluido
-        if "mensaje_original" not in datos:
-            datos["mensaje_original"] = mensaje
+        print("[DEBUG] JSON parseado:", datos)
 
         campos_obligatorios = ["producto", "formato", "precio_litro"]
         faltantes = [campo for campo in campos_obligatorios if campo not in datos or not datos[campo]]
+
+        datos["mensaje_original"] = mensaje
 
         return {
             "ok": len(faltantes) == 0,
@@ -57,6 +60,7 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
         }
 
     except Exception as e:
+        print("[ERROR] Excepción durante el parseo:", e)
         return {
             "ok": False,
             "error": str(e),
