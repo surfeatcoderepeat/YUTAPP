@@ -49,6 +49,7 @@ Devolvé solo un JSON limpio, válido y sin explicaciones ni comentarios.
             "ok": len(faltantes) == 0,
             "faltantes": faltantes,
             "datos": datos,
+            "tabla_destino": "Fermentador"
         }
 
     except Exception as e:
