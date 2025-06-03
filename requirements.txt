@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+python-telegram-bot==20.3
+openai
+pydantic
+psycopg2-binary
+python-dotenv
+pandas
+openpyxl
