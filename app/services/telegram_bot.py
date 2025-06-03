@@ -7,7 +7,13 @@ from app.db.database import SessionLocal
 from app.db.models import MovimientoStock
 import asyncio
 
-settings = get_settings()
+
+# Cargar configuración con manejo de errores
+try:
+    settings = get_settings()
+except Exception as e:
+    print(f"❌ Error al cargar configuración: {e}")
+    settings = None
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user.first_name or "usuario"
@@ -55,7 +61,19 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         db.close()
 
 async def start_bot():
-    application = ApplicationBuilder().token(settings.telegram_bot_token).build()
-    application.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
-    print("🤖 Bot iniciado y escuchando mensajes...")
-    await application.run_polling()
+    if not settings:
+        print("🚫 Bot no iniciado: configuración inválida.")
+        return
+
+    try:
+        application = ApplicationBuilder().token(settings.telegram_bot_token).build()
+        application.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
+        print("🤖 Bot iniciado y escuchando mensajes...")
+
+        # Inicializar y correr en background sin bloquear
+        await application.initialize()
+        await application.start()
+        await application.updater.start_polling()
+
+    except Exception as e:
+        print(f"❌ Error al iniciar el bot: {e}")
