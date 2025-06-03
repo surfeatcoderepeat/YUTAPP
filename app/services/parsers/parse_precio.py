@@ -8,13 +8,16 @@ openai.api_key = settings.openai_api_key
 
 async def parse_precio(mensaje: str, user: str) -> dict:
     prompt = f"""
-Extraé los datos necesarios para registrar o actualizar un precio de venta.
+Extraé los datos para registrar un precio por litro de un producto según el siguiente mensaje.
 
 Campos requeridos:
-- producto (ej: "IPA", "APA", etc.)
-- formato (ej: "botella", "barril")
-- precio_por_litro (valor numérico en reales)
-- mensaje_original (el mensaje completo sin cambios)
+- producto (por ejemplo: APA, IPA, cualquier estilo)
+- formato (por ejemplo: botella o barril)
+- precio_litro (valor numérico en reales)
+- mensaje_original (el mensaje original completo)
+
+Ejemplo de mensaje:
+"El precio por litro en botella de cualquier estilo es 25 reales."
 
 Mensaje:
 \"\"\"{mensaje}\"\"\"
