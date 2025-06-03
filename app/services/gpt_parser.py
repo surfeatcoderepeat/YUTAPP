@@ -45,6 +45,14 @@ Devolvé solo un JSON limpio, estrictamente válido, sin comentarios ni explicac
         )
 
         contenido = response.choices[0].message.content
+
+        # Limpia bloques de markdown tipo ```json ... ```
+        if contenido.strip().startswith("```"):
+            contenido = "\n".join(
+                line for line in contenido.strip().splitlines()
+                if not line.strip().startswith("```")
+            )
+
         print("🔍 Respuesta bruta de OpenAI:", repr(contenido))
         if not contenido or not contenido.strip():
             return {
