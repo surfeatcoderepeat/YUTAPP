@@ -3,6 +3,8 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filters
 from app.core.config import get_settings
 from app.services.message_router import procesar_mensaje_general
+from app.db.database import SessionLocal
+from app.db import models
 import asyncio
 
 # Cargar configuración con manejo de errores
@@ -30,6 +32,24 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     datos = resultado["datos"]
+
+    # Guardar datos en la base de datos
+    tabla_destino = resultado.get("tabla_destino")
+    session = SessionLocal()
+    try:
+        modelo = getattr(models, tabla_destino, None)
+        if modelo is None:
+            await context.bot.send_message(chat_id=chat_id, text=f"❌ Error: La tabla '{tabla_destino}' no existe.")
+            return
+        instancia = modelo(**datos)
+        session.add(instancia)
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        await context.bot.send_message(chat_id=chat_id, text=f"❌ Error al guardar en la base de datos: {e}")
+        return
+    finally:
+        session.close()
 
     # Mensaje de confirmación dinámico
     texto_confirmacion = "\n".join(
