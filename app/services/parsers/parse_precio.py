@@ -14,7 +14,6 @@ Campos requeridos:
 - producto (por ejemplo: APA, IPA, cualquier estilo)
 - formato (por ejemplo: botella o barril)
 - precio_litro (valor numérico en reales)
-- mensaje_original (el mensaje original completo)
 
 Ejemplo de mensaje:
 "El precio por litro en botella de cualquier estilo es 25 reales."
@@ -43,7 +42,11 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
 
         datos = json.loads(contenido)
 
-        campos_obligatorios = ["producto", "formato", "precio_litro", "mensaje_original"]
+        # Agrega el mensaje original si no fue incluido
+        if "mensaje_original" not in datos:
+            datos["mensaje_original"] = mensaje
+
+        campos_obligatorios = ["producto", "formato", "precio_litro"]
         faltantes = [campo for campo in campos_obligatorios if campo not in datos or not datos[campo]]
 
         return {
