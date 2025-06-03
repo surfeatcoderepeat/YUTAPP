@@ -40,7 +40,7 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
 
         datos = json.loads(contenido)
 
-        campos_obligatorios = ["producto", "formato", "precio_por_litro", "mensaje_original"]
+        campos_obligatorios = ["producto", "formato", "precio_litro", "mensaje_original"]
         faltantes = [campo for campo in campos_obligatorios if campo not in datos or not datos[campo]]
 
         return {
