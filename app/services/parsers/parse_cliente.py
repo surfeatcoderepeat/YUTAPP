@@ -44,6 +44,7 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
             "ok": len(faltantes) == 0,
             "faltantes": faltantes,
             "datos": datos,
+            "tabla_destino": "Cliente"
         }
 
     except Exception as e:
