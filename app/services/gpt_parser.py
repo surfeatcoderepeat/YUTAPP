@@ -1,5 +1,6 @@
 # app/services/gpt_parser.py
 import openai
+import json
 from app.core.config import get_settings
 
 settings = get_settings()
@@ -33,7 +34,7 @@ Campos requeridos:
 
 Mensaje:
 \"\"\"{mensaje}\"\"\"
-Devolvé solo un JSON limpio, sin comentarios ni explicaciones.
+Devolvé solo un JSON limpio, estrictamente válido, sin comentarios ni explicaciones.
     """
 
     try:
@@ -44,7 +45,7 @@ Devolvé solo un JSON limpio, sin comentarios ni explicaciones.
         )
 
         contenido = response.choices[0].message.content
-        datos = eval(contenido)  # ⚠️ puede reemplazarse por json.loads() si es formato válido
+        datos = json.loads(contenido)  # ⚠️ puede reemplazarse por json.loads() si es formato válido
 
         # Validación: todos los campos presentes
         faltantes = [campo for campo in CAMPOS_REQUERIDOS if campo not in datos or not datos[campo]]
