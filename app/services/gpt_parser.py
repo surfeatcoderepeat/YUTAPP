@@ -45,12 +45,15 @@ Devolvé solo un JSON limpio, estrictamente válido, sin comentarios ni explicac
         )
 
         contenido = response.choices[0].message.content
+        print("🔍 Respuesta bruta de OpenAI:", repr(contenido))
         if not contenido or not contenido.strip():
             return {
                 "ok": False,
                 "error": "Respuesta vacía de la API de OpenAI",
                 "datos": {}
             }
+        
+        
         datos = json.loads(contenido)  # ⚠️ puede reemplazarse por json.loads() si es formato válido
 
         # Validación: todos los campos presentes
