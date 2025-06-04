@@ -15,18 +15,18 @@ from app.services.parsers import (
 from app.services.classifier import clasificar_mensaje
 
 PARSERS = {
-    "Registrar nuevo cliente": cliente,
-    "Registrar nuevo producto": producto,
-    "Registrar nuevo barril": barril,
-    "Registrar nueva botella": botella,
-    "Registrar nuevo fermentador": fermentador,
-    "Registrar nuevo rótulo": rotulo,
-    "Registrar registro fermentador": registro_fermentador,
-    "Registrar despacho de cerveza": venta,  
-    "Registrar retorno de botellas": botella,
-    "Registrar retorno de barriles": barril,
-    "Registrar venta": venta,
-    "Registrar precio": precio,
+    "Registrar nuevo cliente": cliente.parse_cliente,
+    "Registrar nuevo producto": producto.parse_producto,
+    "Registrar nuevo barril": barril.parse_barril,
+    "Registrar nueva botella": botella.parse_botella,
+    "Registrar nuevo fermentador": fermentador.parse_fermentador,
+    "Registrar nuevo rótulo": rotulo.parse_rotulo,
+    "Registrar registro fermentador": registro_fermentador.parse_registro_fermentador,
+    "Registrar despacho de cerveza": barril.parse_barril,  
+    "Registrar retorno de botellas": botella.parse_botella,
+    "Registrar retorno de barriles": barril.parse_barril,
+    "Registrar venta": venta.parse_venta,
+    "Registrar precio": precio.parse_precio,
 }
 
 async def procesar_mensaje_general(mensaje: str, user: str) -> dict:
