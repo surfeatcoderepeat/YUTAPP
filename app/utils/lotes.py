@@ -17,3 +17,26 @@ def existe_lote_id(lote_id: int) -> bool:
         return session.query(Lote).filter(Lote.id == lote_id).first() is not None
     finally:
         session.close()
+
+def crear_lote_si_no_existe(nombre: str, producto_id: int, id_fermentador: int | None = None) -> int:
+    """
+    Si el lote no existe, lo crea y devuelve su ID. Si existe, devuelve su ID actual.
+    """
+    session = SessionLocal()
+    try:
+        lote = session.query(Lote).filter_by(nombre=nombre, id_producto=producto_id).first()
+        if lote:
+            return lote.id
+
+        nuevo_lote = Lote(
+            nombre=nombre,
+            id_producto=producto_id,
+            id_fermentador=id_fermentador,
+            fecha_creacion=datetime.now(),
+            descripcion=None
+        )
+        session.add(nuevo_lote)
+        session.commit()
+        return nuevo_lote.id
+    finally:
+        session.close()
