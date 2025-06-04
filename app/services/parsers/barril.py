@@ -27,13 +27,13 @@ Extraé la información de todos los barriles mencionados en el siguiente mensaj
 "Ingresaron los barriles 101, 102 y 103, todos vacíos, de 50 litros. El 104 y 105 están llenos con APA, lote 400."
 
 📌 Ejemplo de respuesta:
-\[
-  \{"id": 101, "volumen_litros": 50, "producto": "", "lote": null, "estado": "vacío", "ubicacion": "desconocida"\},
-  \{"id": 102, "volumen_litros": 50, "producto": "", "lote": null, "estado": "vacío", "ubicacion": "desconocida"\},
-  \{"id": 103, "volumen_litros": 50, "producto": "", "lote": null, "estado": "vacío", "ubicacion": "desconocida"\},
-  \{"id": 104, "volumen_litros": 50, "producto": "APA", "lote": 400, "estado": "lleno", "ubicacion": "desconocida"\},
-  \{"id": 105, "volumen_litros": 50, "producto": "APA", "lote": 400, "estado": "lleno", "ubicacion": "desconocida"\}
-\]
+[
+  {"id": 101, "volumen_litros": 50, "producto": "", "lote": null, "estado": "vacío", "ubicacion": "desconocida"},
+  {"id": 102, "volumen_litros": 50, "producto": "", "lote": null, "estado": "vacío", "ubicacion": "desconocida"},
+  {"id": 103, "volumen_litros": 50, "producto": "", "lote": null, "estado": "vacío", "ubicacion": "desconocida"},
+  {"id": 104, "volumen_litros": 50, "producto": "APA", "lote": 400, "estado": "lleno", "ubicacion": "desconocida"},
+  {"id": 105, "volumen_litros": 50, "producto": "APA", "lote": 400, "estado": "lleno", "ubicacion": "desconocida"}
+]
 
 Mensaje:
 \"\"\"{mensaje}\"\"\"

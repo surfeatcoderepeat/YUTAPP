@@ -49,6 +49,8 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
 
         print(f"[DEBUG] Contenido limpio: {contenido}")
         datos = json.loads(contenido)
+        if "etapa" in datos:
+            datos["tipo_evento"] = datos.pop("etapa")
 
         errores = []
 
