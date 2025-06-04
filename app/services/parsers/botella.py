@@ -45,38 +45,44 @@ Devolvé una lista JSON con un objeto por cada tipo de botella. No incluyas expl
         if not isinstance(datos, list):
             datos = [datos]
 
+        # Validación temprana: asegurar que todos los productos y lotes existen antes de procesar
+        for entry in datos:
+            producto = entry.get("producto")
+            lote = entry.get("lote")
+
+            if not producto or not lote:
+                return {
+                    "ok": False,
+                    "faltantes": ["producto" if not producto else None, "lote" if not lote else None],
+                    "datos": []
+                }
+
+            id_producto = await get_producto_id(producto)
+            id_lote = await get_lote_id(lote)
+
+            if id_producto is None or id_lote is None:
+                faltantes = []
+                if id_producto is None:
+                    faltantes.append("id_producto")
+                if id_lote is None:
+                    faltantes.append("id_lote")
+                return {
+                    "ok": False,
+                    "faltantes": faltantes,
+                    "datos": []
+                }
+
+            entry["id_producto"] = id_producto
+            entry["id_lote"] = id_lote
+
+        for entry in datos:
+            entry.pop("producto", None)
+            entry.pop("lote", None)
+
         campos_requeridos = ["volumen_litros", "cantidad", "estado", "ubicacion", "id_producto", "id_lote"]
         faltantes = []
 
         for entry in datos:
-            # Validar y convertir producto a id_producto
-            producto = entry.get("producto")
-            if producto:
-                id_producto = await get_producto_id(producto)
-                if id_producto is not None:
-                    entry["id_producto"] = id_producto
-                else:
-                    faltantes.append("id_producto")
-            else:
-                faltantes.append("id_producto")
-
-            # Validar y convertir lote a id_lote
-            lote = entry.get("lote")
-            if lote:
-                id_lote = await get_lote_id(lote)
-                if id_lote is not None:
-                    entry["id_lote"] = id_lote
-                else:
-                    faltantes.append("id_lote")
-            else:
-                faltantes.append("id_lote")
-
-            # Eliminar producto y lote después de la conversión
-            if "producto" in entry:
-                del entry["producto"]
-            if "lote" in entry:
-                del entry["lote"]
-
             for campo in campos_requeridos:
                 if campo not in entry or not entry[campo]:
                     faltantes.append(campo)

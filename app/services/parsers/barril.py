@@ -2,10 +2,8 @@
 import openai
 import json
 from app.core.config import get_settings
-from app.db.database import SessionLocal
-from app.db.models import Lote, Producto
 from app.utils.productos import get_producto_id
-from app.utils.lotes import lote_valido_para_producto
+from app.utils.lotes import get_lote_id
 
 settings = get_settings()
 openai.api_key = settings.openai_api_key
@@ -61,34 +59,36 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
 
         datos = json.loads(contenido)
 
-        for barril in datos:
-            nombre_producto = barril.get("producto", "").strip().lower()
-            barril["id_producto"] = get_producto_id(nombre_producto) if nombre_producto else None
-            if nombre_producto and barril["id_producto"] is None:
-                return {
-                    "ok": False,
-                    "error": f"Producto '{nombre_producto}' no encontrado en base de datos.",
-                    "datos": {}
-                }
-
-        errores = []
-        for barril in datos:
-            if "lote" in barril and barril["lote"] is not None and barril.get("id_producto") is not None:
-                if not lote_valido_para_producto(barril["lote"], barril["id_producto"]):
-                    errores.append(f"Lote {barril['lote']} no válido para producto '{nombre_producto}'")
-        if errores:
-            return {
-                "ok": False,
-                "error": " - ".join(errores),
-                "datos": {}
-            }
-
         if not isinstance(datos, list):
             return {
                 "ok": False,
                 "error": "La respuesta del modelo no es una lista.",
                 "datos": {}
             }
+
+        for barril in datos:
+            nombre_producto = barril.get("producto", "").strip().lower()
+            if nombre_producto:
+                barril["id_producto"] = get_producto_id(nombre_producto)
+                if barril["id_producto"] is None:
+                    return {
+                        "ok": False,
+                        "error": f"Producto '{nombre_producto}' no encontrado en base de datos.",
+                        "datos": {}
+                    }
+            else:
+                barril["id_producto"] = None
+
+        for barril in datos:
+            if "lote" in barril and barril["lote"] is not None and barril.get("id_producto") is not None:
+                lote_id = get_lote_id(barril["lote"], barril["id_producto"])
+                if lote_id is None:
+                    return {
+                        "ok": False,
+                        "error": f"Lote {barril['lote']} no válido para producto '{barril.get('producto', '')}'",
+                        "datos": {}
+                    }
+                barril["id_lote"] = lote_id
 
         # Eliminar campo producto del resultado final
         for barril in datos:

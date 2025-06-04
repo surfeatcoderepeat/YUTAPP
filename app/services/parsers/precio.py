@@ -1,15 +1,12 @@
 import openai
 import json
 from app.core.config import get_settings
-from app.db.database import SessionLocal
-from app.db.models import Producto
 from app.utils.productos import get_producto_id
 
 settings = get_settings()
 openai.api_key = settings.openai_api_key
 
 async def parse_precio(mensaje: str, user: str) -> dict:
-    session = SessionLocal()
 
     prompt = f"""
 Sos un asistente que debe procesar mensajes para cargar precios de cerveza por litro en una base de datos. 
@@ -66,7 +63,7 @@ NO devuelvas explicaciones ni markdown, solo un JSON válido.
                 faltantes.append(f"formato inválido: {formato}")
                 continue
 
-            id_producto = get_producto_id(session, estilo)
+            id_producto = get_producto_id(estilo)
             if id_producto is None:
                 faltantes.append(f"producto no encontrado: {estilo}")
                 continue
@@ -76,7 +73,6 @@ NO devuelvas explicaciones ni markdown, solo un JSON válido.
                 "formato": formato,
                 "precio_litro": entrada.get("precio_litro")
             })
-        session.close()
 
         return {
             "ok": len(precios_limpios) > 0,

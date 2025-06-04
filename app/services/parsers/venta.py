@@ -1,19 +1,15 @@
 import openai
 import json
 from app.core.config import get_settings
-from app.db.database import SessionLocal
-from app.db.models import Producto, Cliente
 from app.utils.productos import get_producto_id
+from app.utils.clientes import get_cliente_id_por_nombre
 
 settings = get_settings()
 openai.api_key = settings.openai_api_key
 
 async def parse_venta(mensaje: str, user: str) -> dict:
-    session = SessionLocal()
-
-    # Obtener lista de productos y clientes válidos
-    productos = {p.nombre.lower(): p.id for p in session.query(Producto).all()}
-    clientes = {c.nombre.lower(): c.id for c in session.query(Cliente).all()}
+    productos = None  # ya no se usa un diccionario local
+    clientes = None   # ya no se usa un diccionario local
 
     prompt = f"""
 Extraé los datos para registrar una venta de cerveza en una fábrica artesanal.
@@ -47,12 +43,18 @@ Respondé únicamente con un JSON. No incluyas explicaciones, ni encabezados tip
         # Normalización y validación
         errores = []
 
-        if "producto" not in datos or get_producto_id(datos["producto"], productos) is None:
+        producto_id = get_producto_id(datos.get("producto", ""))
+        if not producto_id:
             errores.append("producto inválido")
         else:
-            datos["id_producto"] = get_producto_id(datos["producto"], productos)
-        if "nombre_cliente" not in datos or datos["nombre_cliente"].lower() not in clientes:
+            datos["id_producto"] = producto_id
+
+        cliente_id = get_cliente_id_por_nombre(datos.get("nombre_cliente", ""))
+        if not cliente_id:
             errores.append("cliente no registrado")
+        else:
+            datos["id_cliente"] = cliente_id
+
         if "volumen_litros" not in datos or not isinstance(datos["volumen_litros"], (int, float)):
             errores.append("volumen_litros faltante o inválido")
         if "cantidad" not in datos or not isinstance(datos["cantidad"], int):
@@ -70,7 +72,6 @@ Respondé únicamente con un JSON. No incluyas explicaciones, ni encabezados tip
                 "datos": {}
             }
 
-        datos["id_cliente"] = clientes[datos["nombre_cliente"].lower()]
         datos["precio_unitario"] = 0  # Se puede actualizar después desde precios
         datos["precio_total"] = 0     # Se calcula más adelante
 
@@ -92,6 +93,3 @@ Respondé únicamente con un JSON. No incluyas explicaciones, ni encabezados tip
             "error": str(e),
             "datos": {}
         }
-
-    finally:
-        session.close()

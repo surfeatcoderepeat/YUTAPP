@@ -1,19 +1,13 @@
 import openai
 import json
 from app.core.config import get_settings
-from app.db.database import SessionLocal
-from app.db.models import Producto
-from app.utils.productos import get_producto_id
+from app.utils.productos import get_producto_id, get_productos_validos
 
 settings = get_settings()
 openai.api_key = settings.openai_api_key
 
 async def parse_rotulo(mensaje: str, user: str) -> dict:
-    session = SessionLocal()
-    try:
-        productos_validos = [p.nombre.lower() for p in session.query(Producto).all()]
-    finally:
-        session.close()
+    productos_validos = get_productos_validos()
 
     prompt = f"""
     Extraé los datos para registrar un ingreso de rótulos desde el siguiente mensaje.

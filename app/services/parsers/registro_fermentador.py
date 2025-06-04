@@ -2,8 +2,9 @@ import openai
 import json
 from datetime import datetime
 from app.core.config import get_settings
-from app.db.database import SessionLocal
-from app.db.models import Producto, Lote, Fermentador
+from app.utils.productos import get_producto_id
+from app.utils.lotes import get_lote_id
+from app.utils.fermentadores import existe_fermentador
 
 settings = get_settings()
 openai.api_key = settings.openai_api_key
@@ -50,38 +51,30 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
         print(f"[DEBUG] Contenido limpio: {contenido}")
         datos = json.loads(contenido)
 
-        # Validaciones
-        session = SessionLocal()
         errores = []
 
         # Producto
         if "id_producto" in datos:
-            nombre_producto = datos["id_producto"]
-            producto = session.query(Producto).filter(Producto.nombre.ilike(nombre_producto)).first()
-            if producto:
-                datos["id_producto"] = producto.id
-            else:
-                errores.append(f"Producto '{nombre_producto}' no registrado")
+            try:
+                datos["id_producto"] = get_producto_id(datos["id_producto"])
+            except ValueError as e:
+                errores.append(str(e))
 
         # Lote
-        if "id_lote" in datos:
-            id_lote = datos["id_lote"]
-            lote = session.query(Lote).filter(Lote.id == id_lote).first()
-            if not lote:
-                errores.append(f"Lote {id_lote} no encontrado")
+        if "id_lote" in datos and "id_producto" in datos:
+            id_lote_resuelto = get_lote_id(datos["id_lote"], datos["id_producto"])
+            if id_lote_resuelto:
+                datos["id_lote"] = id_lote_resuelto
+            else:
+                errores.append(f"Lote {datos['id_lote']} no encontrado para el producto {datos['id_producto']}")
 
         # Fermentador
-        if "id_fermentador" in datos:
-            id_f = datos["id_fermentador"]
-            fermentador = session.query(Fermentador).filter(Fermentador.id == id_f).first()
-            if not fermentador:
-                errores.append(f"Fermentador {id_f} no encontrado")
+        if "id_fermentador" in datos and not existe_fermentador(datos["id_fermentador"]):
+            errores.append(f"Fermentador {datos['id_fermentador']} no encontrado")
 
         # Fecha
         if "fecha" not in datos or not datos["fecha"]:
             datos["fecha"] = datetime.now().strftime("%Y-%m-%d")
-
-        session.close()
 
         return {
             "ok": len(errores) == 0,

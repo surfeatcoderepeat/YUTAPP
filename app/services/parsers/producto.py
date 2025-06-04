@@ -2,8 +2,6 @@
 import openai
 import json
 from app.core.config import get_settings
-from app.db.database import SessionLocal
-from app.db.models import Producto
 
 settings = get_settings()
 openai.api_key = settings.openai_api_key
