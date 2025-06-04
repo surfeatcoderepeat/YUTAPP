@@ -1,5 +1,3 @@
-
-
 import openai
 import json
 from datetime import datetime
@@ -17,7 +15,7 @@ Cada línea de registro representa un evento como llenado, toma de muestra, adic
 
 Debés extraer los siguientes campos en formato JSON:
 - id_fermentador (número de fermentador)
-- id_producto (nombre del estilo, si lo hay)
+- id_producto (nombre del producto, si lo hay)
 - id_lote (número del lote, si lo hay)
 - fecha (fecha del evento en formato YYYY-MM-DD o 'hoy' si no se menciona)
 - etapa (puede ser llenado, muestra, adición, embarrilado, limpieza u otra)
@@ -58,12 +56,12 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
 
         # Producto
         if "id_producto" in datos:
-            nombre_prod = datos["id_producto"]
-            producto = session.query(Producto).filter(Producto.nombre.ilike(nombre_prod)).first()
+            nombre_producto = datos["id_producto"]
+            producto = session.query(Producto).filter(Producto.nombre.ilike(nombre_producto)).first()
             if producto:
                 datos["id_producto"] = producto.id
             else:
-                errores.append(f"Producto '{nombre_prod}' no registrado")
+                errores.append(f"Producto '{nombre_producto}' no registrado")
 
         # Lote
         if "id_lote" in datos:

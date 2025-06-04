@@ -2,7 +2,8 @@
 import openai
 import json
 from app.core.config import get_settings
-from app.db import get_product_id, get_lote_id  # Asumiendo que estas funciones existen para validar y obtener IDs
+from app.utils.productos import get_product_id
+from app.utils.lotes import get_lote_id
 
 settings = get_settings()
 openai.api_key = settings.openai_api_key

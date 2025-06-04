@@ -4,6 +4,8 @@ import json
 from app.core.config import get_settings
 from app.db.database import SessionLocal
 from app.db.models import Lote, Producto
+from app.utils.productos import get_product_id
+from app.utils.lotes import lote_valido_para_producto
 
 settings = get_settings()
 openai.api_key = settings.openai_api_key
@@ -59,56 +61,22 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
 
         datos = json.loads(contenido)
 
-        # Mapear producto a id_producto
-        session = SessionLocal()
-        productos_cache = {}
-        try:
-            for barril in datos:
-                nombre_producto = barril.get("producto", "").strip().lower()
-                if nombre_producto:
-                    if nombre_producto not in productos_cache:
-                        producto_obj = session.query(Producto).filter(Producto.nombre.ilike(nombre_producto)).first()
-                        if not producto_obj:
-                            return {
-                                "ok": False,
-                                "error": f"Producto '{nombre_producto}' no encontrado en base de datos.",
-                                "datos": {}
-                            }
-                        productos_cache[nombre_producto] = producto_obj.id
-                    barril["id_producto"] = productos_cache[nombre_producto]
-                else:
-                    barril["id_producto"] = None
-        finally:
-            session.close()
+        for barril in datos:
+            nombre_producto = barril.get("producto", "").strip().lower()
+            barril["id_producto"] = get_product_id(nombre_producto) if nombre_producto else None
+            if nombre_producto and barril["id_producto"] is None:
+                return {
+                    "ok": False,
+                    "error": f"Producto '{nombre_producto}' no encontrado en base de datos.",
+                    "datos": {}
+                }
 
-        # Validación de lotes existentes usando id_producto
-        session = SessionLocal()
-        lotes_invalidos = []
-        try:
-            for barril in datos:
-                if "lote" in barril and barril["lote"] is not None and barril.get("id_producto") is not None:
-                    lote_existente = session.query(Lote).filter(
-                        Lote.id == barril["lote"],
-                        Lote.id_producto == barril["id_producto"]
-                    ).first()
-                    if not lote_existente:
-                        lotes_invalidos.append((barril["lote"], barril["id_producto"]))
-        finally:
-            session.close()
-
-        if lotes_invalidos:
-            errores = []
-            session = SessionLocal()
-            try:
-                for lote, id_prod in lotes_invalidos:
-                    nombre_prod = session.query(Producto.nombre).filter(Producto.id == id_prod).scalar()
-                    lotes_disp = session.query(Lote.id).filter(Lote.id_producto == id_prod).all()
-                    lotes_ids = [l[0] for l in lotes_disp]
-                    errores.append(
-                        f"Lote {lote} no encontrado para producto '{nombre_prod}'. Lotes disponibles: {lotes_ids}"
-                    )
-            finally:
-                session.close()
+        errores = []
+        for barril in datos:
+            if "lote" in barril and barril["lote"] is not None and barril.get("id_producto") is not None:
+                if not lote_valido_para_producto(barril["lote"], barril["id_producto"]):
+                    errores.append(f"Lote {barril['lote']} no válido para producto '{nombre_producto}'")
+        if errores:
             return {
                 "ok": False,
                 "error": " - ".join(errores),

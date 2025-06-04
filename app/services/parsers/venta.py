@@ -3,6 +3,7 @@ import json
 from app.core.config import get_settings
 from app.db.database import SessionLocal
 from app.db.models import Producto, Cliente
+from app.utils.validations import get_product_id
 
 settings = get_settings()
 openai.api_key = settings.openai_api_key
@@ -11,7 +12,7 @@ async def parse_venta(mensaje: str, user: str) -> dict:
     session = SessionLocal()
 
     # Obtener lista de productos y clientes válidos
-    productos = [p.nombre.lower() for p in session.query(Producto).all()]
+    productos = {p.nombre.lower(): p.id for p in session.query(Producto).all()}
     clientes = {c.nombre.lower(): c.id for c in session.query(Cliente).all()}
 
     prompt = f"""
@@ -46,8 +47,10 @@ Respondé únicamente con un JSON. No incluyas explicaciones, ni encabezados tip
         # Normalización y validación
         errores = []
 
-        if "producto" not in datos or datos["producto"].lower() not in productos:
+        if "producto" not in datos or get_product_id(datos["producto"], productos) is None:
             errores.append("producto inválido")
+        else:
+            datos["id_producto"] = get_product_id(datos["producto"], productos)
         if "nombre_cliente" not in datos or datos["nombre_cliente"].lower() not in clientes:
             errores.append("cliente no registrado")
         if "volumen_litros" not in datos or not isinstance(datos["volumen_litros"], (int, float)):
@@ -73,6 +76,7 @@ Respondé únicamente con un JSON. No incluyas explicaciones, ni encabezados tip
 
         # Quitar campos redundantes
         datos.pop("nombre_cliente", None)
+        datos.pop("producto", None)
 
         resultado = {
             "ok": True,

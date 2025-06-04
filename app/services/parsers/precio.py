@@ -3,20 +3,19 @@ import json
 from app.core.config import get_settings
 from app.db.database import SessionLocal
 from app.db.models import Producto
+from app.utils.validations import get_product_id
 
 settings = get_settings()
 openai.api_key = settings.openai_api_key
 
 async def parse_precio(mensaje: str, user: str) -> dict:
     session = SessionLocal()
-    productos_disponibles = [p.nombre.lower() for p in session.query(Producto).all()]
-    session.close()
 
     prompt = f"""
 Sos un asistente que debe procesar mensajes para cargar precios de cerveza por litro en una base de datos. 
 El usuario puede enviar precios generales para todos los estilos, o específicos para estilos IPA o no IPA, y también por formato (botella o barril).
 
-Estilos disponibles: {", ".join(productos_disponibles)}
+Indicá estilos conocidos cargados previamente por el usuario.
 Formatos posibles: botella, barril
 
 Ejemplo 1:
@@ -59,21 +58,16 @@ NO devuelvas explicaciones ni markdown, solo un JSON válido.
         precios_limpios = []
         faltantes = []
 
-        session = SessionLocal()
         for entrada in precios:
             estilo = entrada.get("producto", "").lower()
             formato = entrada.get("formato", "").lower()
-
-            if estilo not in productos_disponibles:
-                faltantes.append(f"producto inválido: {estilo}")
-                continue
 
             if formato not in ["botella", "barril"]:
                 faltantes.append(f"formato inválido: {formato}")
                 continue
 
-            id_producto = session.query(Producto.id).filter(Producto.nombre.ilike(estilo)).scalar()
-            if not id_producto:
+            id_producto = get_product_id(session, estilo)
+            if id_producto is None:
                 faltantes.append(f"producto no encontrado: {estilo}")
                 continue
 

@@ -1,10 +1,9 @@
-
-
 import openai
 import json
 from app.core.config import get_settings
 from app.db.database import SessionLocal
 from app.db.models import Producto
+from app.utils.productos import get_product_id
 
 settings = get_settings()
 openai.api_key = settings.openai_api_key
@@ -48,7 +47,18 @@ async def parse_rotulo(mensaje: str, user: str) -> dict:
 
         datos = json.loads(contenido)
 
-        faltantes = [campo for campo in ["producto", "cantidad"] if campo not in datos or not datos[campo]]
+        producto_nombre = datos.get("producto", "").lower()
+        id_producto = get_product_id(producto_nombre)
+        if not id_producto:
+            return {
+                "ok": False,
+                "error": f"Producto '{producto_nombre}' no encontrado en la base de datos.",
+                "datos": {},
+            }
+        datos["id_producto"] = id_producto
+        datos.pop("producto", None)
+
+        faltantes = [campo for campo in ["id_producto", "cantidad"] if campo not in datos or not datos[campo]]
 
         return {
             "ok": len(faltantes) == 0,
