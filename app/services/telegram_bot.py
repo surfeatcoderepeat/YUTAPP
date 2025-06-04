@@ -1,4 +1,5 @@
 # app/services/telegram_bot.py
+import telegram
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filters
 from app.core.config import get_settings
@@ -130,10 +131,11 @@ async def start_bot():
         )
         print("🤖 Bot iniciado y escuchando mensajes...")
 
-        # Usar initialize, start y start_polling por separado para evitar cerrar el event loop
-        await application.initialize()
-        await application.start()
-        await application.updater.start_polling()
+        try:
+            await application.run_polling()
+            print("✅ Bot activo y escuchando (run_polling)")
+        except Exception as e:
+            print(f"⚠️ Error al iniciar polling del bot: {e}")
 
     except Exception as e:
         print(f"❌ Error al iniciar el bot: {e}")

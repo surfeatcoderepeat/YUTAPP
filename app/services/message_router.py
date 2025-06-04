@@ -27,12 +27,14 @@ PARSERS = {
     # los operativos se agregan después
 }
 
-def procesar_mensaje_general(mensaje: str, user: str) -> dict:
+async def procesar_mensaje_general(mensaje: str, user: str) -> dict:
     """
     Clasifica el mensaje, selecciona el parser correspondiente y retorna el resultado.
     Si no se reconoce el tipo, devuelve el set de opciones para que el usuario elija.
     """
-    tipo = clasificar_mensaje(mensaje)
+    print(f"[DEBUG] Clasificando mensaje: {mensaje} (usuario: {user})")
+    tipo = await clasificar_mensaje(mensaje, user)
+    print(f"[DEBUG] Tipo clasificado: {tipo}")
 
     if tipo not in PARSERS:
         return {
@@ -43,4 +45,5 @@ def procesar_mensaje_general(mensaje: str, user: str) -> dict:
         }
 
     parser = PARSERS[tipo]
+    print(f"[DEBUG] Usando parser: {parser.__name__}")
     return parser(mensaje, user)
