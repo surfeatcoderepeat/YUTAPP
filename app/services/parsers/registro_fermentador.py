@@ -108,8 +108,18 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
             "tabla_destino": "RegistroFermentador",
         }
 
-        if "mensaje_lote_creado" in datos:
-            respuesta["mensaje_usuario"] = datos["mensaje_lote_creado"]
+        if respuesta["ok"]:
+            lote = datos.get("id_lote", "?")
+            litros = datos.get("descripcion", "").split(" ")[0] if "litros" in datos.get("descripcion", "") else "?"
+            producto = datos.get("id_producto", "producto desconocido")
+            fermentador = datos.get("id_fermentador", "?")
+            estado = datos.get("tipo_evento", "?")
+            responsable = datos.get("responsable", "?")
+            
+            respuesta["mensaje_usuario"] = (
+                f"✅ Registro exitoso: {litros} litros de {producto} en el fermentador {fermentador} "
+                f"(lote {lote}), etapa: {estado}, registrado por {responsable}."
+            )
 
         return respuesta
 
