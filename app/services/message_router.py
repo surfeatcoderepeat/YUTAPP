@@ -50,4 +50,4 @@ async def procesar_mensaje_general(mensaje: str, user: str) -> dict:
 
     parser = PARSERS[categoria]
     print(f"[DEBUG] Usando parser: {parser.__name__}")
-    return parser(mensaje, user)
+    return await parser(mensaje, user)
