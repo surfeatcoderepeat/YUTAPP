@@ -52,7 +52,6 @@ Mensaje:
 
         campos_obligatorios = ["nombre", "capacidad_litros", "estado_actual"]
         faltantes = [campo for campo in campos_obligatorios if campo not in datos or not datos[campo]]
-        datos["mensaje_original"] = mensaje
         return {
             "ok": len(faltantes) == 0,
             "faltantes": faltantes,
