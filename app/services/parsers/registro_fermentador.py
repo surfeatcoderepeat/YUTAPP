@@ -3,7 +3,6 @@ import json
 from datetime import datetime
 from app.core.config import get_settings
 from app.utils.productos import get_producto_id
-from app.utils.lotes import get_lote_id
 from app.utils.fermentadores import existe_fermentador
 
 settings = get_settings()
@@ -17,7 +16,7 @@ Cada línea de registro representa un evento como llenado, toma de muestra, adic
 Debés extraer los siguientes campos en formato JSON:
 - id_fermentador (número de fermentador)
 - id_producto (nombre del producto, si lo hay)
-- id_lote (número del lote, si lo hay)
+- id_lote (número del lote si lo hay, no usar nombres)
 - fecha (fecha del evento en formato YYYY-MM-DD o 'hoy' si no se menciona)
 - etapa (puede ser llenado, muestra, adición, embarrilado, limpieza u otra)
 - observaciones (detalles adicionales que ayuden a interpretar el evento)
@@ -61,12 +60,11 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
                 errores.append(str(e))
 
         # Lote
-        if "id_lote" in datos and "id_producto" in datos:
-            id_lote_resuelto = get_lote_id(datos["id_lote"], datos["id_producto"])
-            if id_lote_resuelto:
-                datos["id_lote"] = id_lote_resuelto
-            else:
-                errores.append(f"Lote {datos['id_lote']} no encontrado para el producto {datos['id_producto']}")
+        if "id_lote" in datos:
+            try:
+                datos["id_lote"] = int(datos["id_lote"])
+            except:
+                errores.append("id_lote inválido o no numérico")
 
         # Fermentador
         if "id_fermentador" in datos and not existe_fermentador(datos["id_fermentador"]):
