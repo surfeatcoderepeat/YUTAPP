@@ -76,7 +76,11 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
             # Si es un llenado y el lote no existe, lo creamos automáticamente
             if datos.get("tipo_evento") == "llenado" and not existe_lote_id(datos["id_lote"]):
                 print(f"[DEBUG] Lote {datos['id_lote']} no existe, se creará automáticamente...")
-                crear_lote_si_no_existe(datos["id_lote"], datos["id_producto"], datos["fecha"])
+                crear_lote_si_no_existe(
+                    descripcion=f"Lote {datos['id_lote']}",
+                    producto_id=datos["id_producto"],
+                    id_fermentador=datos.get("id_fermentador")
+                )
                 datos["mensaje_lote_creado"] = f"✅ Lote {datos['id_lote']} creado automáticamente."
 
         # Fermentador

@@ -1,11 +1,12 @@
 from app.db.database import SessionLocal
 from app.db.models import Lote
+from datetime import datetime
 
-def get_lote_id(lote_nombre: str, producto_id: int) -> int | None:
+def get_lote_id(lote_descripcion: str, producto_id: int) -> int | None:
     """Devuelve el ID del lote si existe, o None si no."""
     session = SessionLocal()
     try:
-        lote = session.query(Lote).filter_by(nombre=lote_nombre, id_producto=producto_id).first()
+        lote = session.query(Lote).filter_by(descripcion=lote_descripcion, id_producto=producto_id).first()
         return lote.id if lote else None
     finally:
         session.close()
@@ -18,22 +19,21 @@ def existe_lote_id(lote_id: int) -> bool:
     finally:
         session.close()
 
-def crear_lote_si_no_existe(nombre: str, producto_id: int, id_fermentador: int | None = None) -> int:
+def crear_lote_si_no_existe(descripcion: str, producto_id: int, id_fermentador: int | None = None) -> int:
     """
     Si el lote no existe, lo crea y devuelve su ID. Si existe, devuelve su ID actual.
     """
     session = SessionLocal()
     try:
-        lote = session.query(Lote).filter_by(nombre=nombre, id_producto=producto_id).first()
+        lote = session.query(Lote).filter_by(descripcion=descripcion, id_producto=producto_id).first()
         if lote:
             return lote.id
 
         nuevo_lote = Lote(
-            nombre=nombre,
+            descripcion=descripcion,
             id_producto=producto_id,
             id_fermentador=id_fermentador,
-            fecha_creacion=datetime.now(),
-            descripcion=None
+            fecha_creacion=datetime.now()
         )
         session.add(nuevo_lote)
         session.commit()
