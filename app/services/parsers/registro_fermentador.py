@@ -78,7 +78,6 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
                 print(f"[DEBUG] Lote {datos['id_lote']} no existe, se creará automáticamente...")
                 crear_lote_si_no_existe(
                     descripcion=f"Lote {datos['id_lote']}",
-                    producto_id=datos["id_producto"],
                     id_fermentador=datos.get("id_fermentador")
                 )
                 datos["mensaje_lote_creado"] = f"✅ Lote {datos['id_lote']} creado automáticamente."
