@@ -71,9 +71,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     finally:
         session.close()
 
-    texto_confirmacion = "\n".join(
-        [f"- {k.replace('_', ' ').capitalize()}: {v}" for k, v in datos.items() if k != "mensaje_original"]
-    )
+    if isinstance(datos, list):
+        texto_confirmacion = "\n\n".join(
+            ["\n".join([f"- {k.replace('_', ' ').capitalize()}: {v}" for k, v in d.items() if k != "mensaje_original"]) for d in datos]
+        )
+    else:
+        texto_confirmacion = "\n".join(
+            [f"- {k.replace('_', ' ').capitalize()}: {v}" for k, v in datos.items() if k != "mensaje_original"]
+        )
     await context.bot.send_message(
         chat_id=chat_id,
         text=f"✅ Registro exitoso:\n{texto_confirmacion}"
