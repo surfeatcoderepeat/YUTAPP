@@ -131,11 +131,12 @@ async def start_bot():
         )
         print("🤖 Bot iniciado y escuchando mensajes...")
 
-        try:
-            await application.run_polling()
-            print("✅ Bot activo y escuchando (run_polling)")
-        except Exception as e:
-            print(f"⚠️ Error al iniciar polling del bot: {e}")
+        # Bloque alternativo compatible con Railway
+        await application.initialize()
+        await application.start()
+        print("✅ Bot activo y escuchando (start_polling)")
+        await application.updater.start_polling()
+        await application.updater.idle()
 
     except Exception as e:
         print(f"❌ Error al iniciar el bot: {e}")
