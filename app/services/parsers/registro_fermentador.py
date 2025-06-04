@@ -98,8 +98,11 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
         }
 
     except Exception as e:
+        error_msg = str(e)
+        if "violates foreign key constraint" in error_msg and "id_lote" in error_msg:
+            error_msg = "Verificá el número de lote: no se encontró ningún lote registrado con ese ID."
         return {
             "ok": False,
-            "error": str(e),
+            "error": error_msg,
             "datos": {},
         }
