@@ -136,7 +136,6 @@ async def start_bot():
         await application.start()
         print("✅ Bot activo y escuchando (start_polling)")
         await application.updater.start_polling()
-        await application.updater.idle()
 
     except Exception as e:
         print(f"❌ Error al iniciar el bot: {e}")

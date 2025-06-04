@@ -33,7 +33,7 @@ async def procesar_mensaje_general(mensaje: str, user: str) -> dict:
     Si no se reconoce el tipo, devuelve el set de opciones para que el usuario elija.
     """
     print(f"[DEBUG] Clasificando mensaje: {mensaje} (usuario: {user})")
-    tipo = await clasificar_mensaje(mensaje, user)
+    tipo = await clasificar_mensaje(mensaje)
     print(f"[DEBUG] Tipo clasificado: {tipo}")
 
     if tipo not in PARSERS:
