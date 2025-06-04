@@ -76,6 +76,8 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
         if "fecha" not in datos or not datos["fecha"]:
             datos["fecha"] = datetime.now().strftime("%Y-%m-%d")
 
+        datos.pop("observaciones", None)
+
         return {
             "ok": len(errores) == 0,
             "datos": datos,
