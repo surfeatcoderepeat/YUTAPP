@@ -4,6 +4,7 @@ from datetime import datetime
 from app.core.config import get_settings
 from app.utils.productos import get_producto_id
 from app.utils.fermentadores import existe_fermentador
+from app.utils.lotes import existe_lote_id
 
 settings = get_settings()
 openai.api_key = settings.openai_api_key
@@ -72,6 +73,12 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
             except:
                 errores.append("id_lote inválido o no numérico")
 
+            
+            if not existe_lote_id(datos["id_lote"]):
+                errores.append(
+                    f"Lote {datos['id_lote']} no encontrado. Este evento genera el lote, por lo tanto no debe indicarse un ID existente sino un nombre nuevo."
+                )
+
         # Fermentador
         if "id_fermentador" in datos and not existe_fermentador(datos["id_fermentador"]):
             errores.append(f"Fermentador {datos['id_fermentador']} no encontrado")
@@ -87,7 +94,7 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
             datos["descripcion"] = datos["observaciones"]
 
         # Filtramos solo los campos válidos para el modelo RegistroFermentador
-        campos_validos = {"fecha", "id_lote", "id_fermentador", "tipo_evento", "descripcion", "responsable", "id_producto"}
+        campos_validos = {"fecha", "id_lote", "id_fermentador", "tipo_evento", "descripcion", "responsable", "id_producto", "nombre_lote"}
         datos = {k: v for k, v in datos.items() if k in campos_validos}
 
         return {
