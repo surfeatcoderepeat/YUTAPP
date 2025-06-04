@@ -8,22 +8,21 @@ openai.api_key = settings.openai_api_key
 
 async def parse_venta(mensaje: str, user: str) -> dict:
     prompt = f"""
-Extraé los datos necesarios para registrar una venta de cerveza artesanal.
+Extraé los siguientes datos de una venta:
 
-Campos requeridos:
-- producto (ej: "IPA", "APA", etc.)
-- formato (ej: "botella", "barril")
-- volumen_litros (cantidad total vendida en litros)
+- producto (nombre del estilo)
+- formato (botella o barril)
+- volumen_litros (por unidad)
+- cantidad (número de unidades)
+- fecha_pedido (si no se menciona, usar fecha de hoy)
+- fecha_cobro (si no se menciona, dejar nulo)
+- responsable (nombre de quien registró la venta)
 - cliente (nombre del cliente)
-- fecha_pedido (fecha de la venta o del pedido, en formato YYYY-MM-DD)
-- fecha_cobro (fecha de cobro si se menciona, en formato YYYY-MM-DD, puede ser null)
-- responsable (usuario que lo envía: "{user}")
-- mensaje_original (el mensaje completo sin cambios)
+
+Devolvé solo un JSON válido. No uses markdown ni comentarios.
 
 Mensaje:
 \"\"\"{mensaje}\"\"\"
-
-Devolvé solo un JSON válido, sin explicaciones ni comentarios.
 """
 
     try:

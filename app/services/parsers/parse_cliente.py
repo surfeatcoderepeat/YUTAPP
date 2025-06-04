@@ -8,17 +8,21 @@ openai.api_key = settings.openai_api_key
 
 async def parse_cliente(mensaje: str, user: str) -> dict:
     prompt = f"""
-Extraé los datos para registrar un cliente nuevo a partir del siguiente mensaje.
+Extraé los datos para registrar uno o más clientes a partir del siguiente mensaje.
 
-Campos requeridos:
+Por cada cliente, devolvé un objeto con los siguientes campos:
 - nombre (nombre del cliente)
 - cnpj_cpf (si estuviera presente, opcional)
-- mensaje_original (el mensaje completo sin cambios)
+
+Si hay varios clientes, devolvé una lista de objetos. Si hay solo uno, devolvelo igual en una lista.
+
+IMPORTANTE:
+- Usá los nombres tal como deben guardarse en la base de datos (sin errores de tipeo).
+- Devolvé solo el JSON sin explicaciones, sin comentarios, sin texto adicional.
+- No incluyas bloques tipo markdown (nada de ```json).
 
 Mensaje:
 \"\"\"{mensaje}\"\"\"
-
-Devolvé solo un JSON válido, sin explicaciones ni comentarios.
 """
 
     try:

@@ -8,21 +8,20 @@ openai.api_key = settings.openai_api_key
 
 async def parse_muestra(mensaje: str, user: str) -> dict:
     prompt = f"""
-Extraé los datos necesarios para registrar una muestra tomada de un lote en fermentación.
+Extraé los siguientes campos para registrar una muestra de cerveza:
 
-Campos requeridos:
-- lote (número del lote)
-- fermentador (número del fermentador asociado)
-- momento (etapa en la que se tomó la muestra: ej. "antes de adicionar gelatina", "final de fermentación", etc.)
-- densidad (si se menciona, opcional, como número flotante)
-- estado (texto descriptivo corto)
-- responsable (usuario que lo envía: '{user}')
-- mensaje_original (mensaje completo sin cambios)
+- id_lote (número de lote, como 407)
+- etapa (por ejemplo: fin de fermentación, pre-gelatina, pre-embarrilado)
+- fecha (si no está, usar fecha de hoy)
+- responsable (nombre de quien tomó la muestra)
+- observaciones (estado, densidad, resultados, etc.)
 
+Ejemplo:
+"Muestra tomada del lote 407 antes de adicionar gelatina. Densidad: 1.012. Responsable: Juani."
+
+⚠️ Devolvé solo JSON, sin comentarios, sin bloques ```json.
 Mensaje:
 \"\"\"{mensaje}\"\"\"
-
-Devolvé solo un JSON válido, sin explicaciones ni comentarios.
 """
 
     try:

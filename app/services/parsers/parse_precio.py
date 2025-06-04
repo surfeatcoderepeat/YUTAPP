@@ -8,16 +8,30 @@ openai.api_key = settings.openai_api_key
 
 async def parse_precio(mensaje: str, user: str) -> dict:
     prompt = f"""
-Extraé los datos para registrar un precio por litro de un producto según el siguiente mensaje.
+Extraé los datos para registrar precios por litro de cerveza a partir del siguiente mensaje.
 
-Campos requeridos:
-- producto (por ejemplo: APA, IPA, cualquier estilo)
-- formato (por ejemplo: botella o barril)
+🔸 Si el mensaje se refiere a "todos los estilos", "todos los productos", o una expresión similar, devolvé una lista de registros, uno por cada estilo de cerveza.
+
+📌 Estilos válidos (usar exactamente estos nombres):
+["session ipa", "ipa patagonica", "black ipa", "red ipa", "cream ale", "honey", "maracujapa", "pilsen"]
+
+📌 Si el mensaje menciona un estilo que **no coincide exactamente** con estos nombres, asumí el más probable y devolvé el campo `producto` exactamente como está escrito en la lista.
+
+📌 Campos requeridos en cada registro:
+- producto (uno de los estilos válidos, exactamente como en la lista)
+- formato (por ejemplo: "botella", "barril")
 - precio_litro (valor numérico en reales)
-- mensaje_original (el mensaje original completo)
 
-Ejemplo de mensaje:
-"El precio por litro en botella de cualquier estilo es 25 reales."
+📌 Ejemplo de mensaje:
+"El precio por litro en botella de todos los estilos es 25 reales."
+
+✅ Ejemplo de respuesta esperada:
+```json
+[
+  {"producto": "session ipa", "formato": "botella", "precio_litro": 25},
+  {"producto": "ipa patagonica", "formato": "botella", "precio_litro": 25},
+  ...
+]
 
 Mensaje:
 \"\"\"{mensaje}\"\"\"

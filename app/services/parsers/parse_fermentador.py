@@ -8,20 +8,26 @@ openai.api_key = settings.openai_api_key
 
 async def parse_fermentador(mensaje: str, user: str) -> dict:
     prompt = f"""
-Extraé los datos necesarios para registrar el uso de un fermentador.
+Extraé los datos para registrar un fermentador a partir del siguiente mensaje.
 
 Campos requeridos:
-- numero (número identificador del fermentador)
-- producto (tipo de cerveza: "IPA", "APA", etc.)
-- lote (número de lote asociado)
-- volumen_litros (si estuviera presente, opcional)
-- adiciones (si se menciona alguna, como frutas o lúpulo, opcional)
-- mensaje_original (el mensaje completo sin cambios)
+- nombre (identificador del fermentador, por ejemplo "Fermentador 3")
+- capacidad_litros (valor numérico, puede expresarse como "300 litros")
+- estado_actual (por ejemplo: vacío, lleno, en fermentación, etc.)
+
+Ejemplo de mensaje:
+"El fermentador número 3, con capacidad de 300 litros, se encuentra actualmente vacío."
+
+⚠️ Importante:
+- Solo se registrará un fermentador por vez.
+- Extraé los datos aunque estén en otro orden o redactados informalmente.
+- Convertí la capacidad a valor numérico sin unidades.
+- Devolvé el JSON sin explicaciones, sin comentarios, sin texto adicional.
+- No uses bloques de markdown como ```json.
+- Asegurate de que los nombres y estados estén bien escritos para evitar registros inconsistentes.
 
 Mensaje:
 \"\"\"{mensaje}\"\"\"
-
-Devolvé solo un JSON limpio, válido y sin explicaciones ni comentarios.
 """
 
     try:
