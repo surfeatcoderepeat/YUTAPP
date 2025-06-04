@@ -94,7 +94,7 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
             datos["descripcion"] = datos["observaciones"]
 
         # Filtramos solo los campos válidos para el modelo RegistroFermentador
-        campos_validos = {"fecha", "id_lote", "id_fermentador", "tipo_evento", "descripcion", "responsable", "id_producto", "nombre_lote"}
+        campos_validos = {"fecha", "id_lote", "id_fermentador", "tipo_evento", "descripcion", "responsable", "id_producto"}
         datos = {k: v for k, v in datos.items() if k in campos_validos}
 
         respuesta = {
