@@ -130,7 +130,10 @@ async def start_bot():
         )
         print("🤖 Bot iniciado y escuchando mensajes...")
 
-        await application.run_polling()
+        # Usar initialize, start y start_polling por separado para evitar cerrar el event loop
+        await application.initialize()
+        await application.start()
+        await application.updater.start_polling()
 
     except Exception as e:
         print(f"❌ Error al iniciar el bot: {e}")
