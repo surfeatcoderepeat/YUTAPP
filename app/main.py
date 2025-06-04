@@ -6,13 +6,13 @@ import asyncio
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("🚀 Iniciando ShootUp con bot y servidor...")
+    print("🚀 Iniciando YUTAPP con bot y servidor...")
     asyncio.create_task(start_bot())
     yield
-    print("🛑 Terminando ShootUp...")  # (opcional)
+    print("🛑 Terminando YUTAPP...")  # (opcional)
 
-app = FastAPI(title="ShootUp", lifespan=lifespan)
+app = FastAPI(title="YUTAPP", lifespan=lifespan)
 
 @app.get("/")
 def read_root():
-    return {"message": "ShootUp API corriendo 🤘"}
+    return {"message": "YUTAPP API corriendo 🤘"}
