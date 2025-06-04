@@ -26,8 +26,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=chat_id, text=f"📩 Recibido, {user}. Procesando tu mensaje...")
 
     resultado = await procesar_mensaje_general(message_text, user)
+    print("[DEBUG] Resultado procesado:", resultado)
 
-    if not resultado["ok"]:
+    if not resultado.get("ok", False):
         if "error" in resultado:
             await context.bot.send_message(chat_id=chat_id, text=f"❌ Error: {resultado['error']}")
         else:
@@ -95,8 +96,9 @@ async def handle_clasificacion_manual(update: Update, context: ContextTypes.DEFA
     mensaje_original = USER_CONTEXT.pop(chat_id)["mensaje_original"]
 
     resultado = await procesar_mensaje_general(mensaje_original, user=update.effective_user.first_name, forzar_clasificacion=seleccion)
+    print("[DEBUG] Resultado forzado procesado:", resultado)
 
-    if not resultado["ok"]:
+    if not resultado.get("ok", False):
         await context.bot.send_message(chat_id=chat_id, text=f"❌ Error al procesar: {resultado.get('error', 'Datos incompletos')}")
         return
 

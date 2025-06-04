@@ -73,15 +73,14 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
             errores.append(f"Fermentador {datos['id_fermentador']} no encontrado")
 
         # Fecha
-        if "fecha" not in datos or not datos["fecha"]:
-            datos["fecha"] = datetime.now().isoformat()
-        else:
-            try:
-                datos["fecha"] = datetime.strptime(datos["fecha"], "%Y-%m-%d").isoformat()
-            except Exception:
-                errores.append("Formato de fecha inválido. Usar YYYY-MM-DD o 'hoy'")
+        if "fecha" not in datos or not datos["fecha"] or datos["fecha"].strip().lower() == "hoy":
+            datos["fecha"] = datetime.now().strftime("%Y-%m-%d")
 
         # No eliminamos el campo 'observaciones' para que quede en datos
+
+        # Si no hay 'descripcion' pero sí 'observaciones', usar 'observaciones' como descripcion
+        if "descripcion" not in datos and "observaciones" in datos:
+            datos["descripcion"] = datos["observaciones"]
 
         # Filtramos solo los campos válidos para el modelo RegistroFermentador
         campos_validos = {"fecha", "id_lote", "id_fermentador", "tipo_evento", "descripcion", "responsable", "id_producto"}
