@@ -61,6 +61,7 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
 
         # Producto
         if "id_producto" in datos:
+            nombre_producto = datos["id_producto"]
             try:
                 datos["id_producto"] = get_producto_id(datos["id_producto"])
             except ValueError as e:
@@ -111,7 +112,7 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
         if respuesta["ok"]:
             lote = datos.get("id_lote", "?")
             litros = datos.get("descripcion", "").split(" ")[0] if "litros" in datos.get("descripcion", "") else "?"
-            producto = datos.get("id_producto", "producto desconocido")
+            producto = nombre_producto if 'nombre_producto' in locals() else "producto desconocido"
             fermentador = datos.get("id_fermentador", "?")
             estado = datos.get("tipo_evento", "?")
             responsable = datos.get("responsable", "?")
