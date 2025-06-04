@@ -74,7 +74,12 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
 
         # Fecha
         if "fecha" not in datos or not datos["fecha"]:
-            datos["fecha"] = datetime.now().strftime("%Y-%m-%d")
+            datos["fecha"] = datetime.now().isoformat()
+        else:
+            try:
+                datos["fecha"] = datetime.strptime(datos["fecha"], "%Y-%m-%d").isoformat()
+            except Exception:
+                errores.append("Formato de fecha inválido. Usar YYYY-MM-DD o 'hoy'")
 
         # No eliminamos el campo 'observaciones' para que quede en datos
 
