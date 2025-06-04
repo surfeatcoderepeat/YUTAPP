@@ -72,18 +72,22 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     finally:
         session.close()
 
-    if isinstance(datos, list):
-        texto_confirmacion = "\n\n".join(
-            ["\n".join([f"- {k.replace('_', ' ').capitalize()}: {v}" for k, v in d.items() if k != "mensaje_original"]) for d in datos]
-        )
+    mensaje_usuario = resultado.get("mensaje_usuario")
+    if mensaje_usuario:
+        await context.bot.send_message(chat_id=chat_id, text=mensaje_usuario)
     else:
-        texto_confirmacion = "\n".join(
-            [f"- {k.replace('_', ' ').capitalize()}: {v}" for k, v in datos.items() if k != "mensaje_original"]
+        if isinstance(datos, list):
+            texto_confirmacion = "\n\n".join(
+                ["\n".join([f"- {k.replace('_', ' ').capitalize()}: {v}" for k, v in d.items() if k != "mensaje_original"]) for d in datos]
+            )
+        else:
+            texto_confirmacion = "\n".join(
+                [f"- {k.replace('_', ' ').capitalize()}: {v}" for k, v in datos.items() if k != "mensaje_original"]
+            )
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text=f"✅ Registro exitoso:\n{texto_confirmacion}"
         )
-    await context.bot.send_message(
-        chat_id=chat_id,
-        text=f"✅ Registro exitoso:\n{texto_confirmacion}"
-    )
 
 async def handle_clasificacion_manual(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
