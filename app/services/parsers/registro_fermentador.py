@@ -76,7 +76,11 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
         if "fecha" not in datos or not datos["fecha"]:
             datos["fecha"] = datetime.now().strftime("%Y-%m-%d")
 
-        datos.pop("observaciones", None)
+        # No eliminamos el campo 'observaciones' para que quede en datos
+
+        # Filtramos solo los campos válidos para el modelo RegistroFermentador
+        campos_validos = {"fecha", "id_lote", "id_fermentador", "tipo_evento", "descripcion", "responsable", "id_producto"}
+        datos = {k: v for k, v in datos.items() if k in campos_validos}
 
         return {
             "ok": len(errores) == 0,
