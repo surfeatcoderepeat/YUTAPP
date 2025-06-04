@@ -56,8 +56,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if modelo is None:
             await context.bot.send_message(chat_id=chat_id, text=f"❌ Error: La tabla '{tabla_destino}' no existe.")
             return
-        instancia = modelo(**datos)
-        session.add(instancia)
+        if isinstance(datos, list):
+            for d in datos:
+                instancia = modelo(**d)
+                session.add(instancia)
+        else:
+            instancia = modelo(**datos)
+            session.add(instancia)
         session.commit()
     except Exception as e:
         session.rollback()
@@ -98,8 +103,13 @@ async def handle_clasificacion_manual(update: Update, context: ContextTypes.DEFA
         if modelo is None:
             await context.bot.send_message(chat_id=chat_id, text=f"❌ Error: La tabla '{tabla_destino}' no existe.")
             return
-        instancia = modelo(**datos)
-        session.add(instancia)
+        if isinstance(datos, list):
+            for d in datos:
+                instancia = modelo(**d)
+                session.add(instancia)
+        else:
+            instancia = modelo(**datos)
+            session.add(instancia)
         session.commit()
     except Exception as e:
         session.rollback()
