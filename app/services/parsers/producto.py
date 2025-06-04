@@ -2,6 +2,7 @@
 import openai
 import json
 from app.core.config import get_settings
+from app.utils.productos import get_producto_id
 
 settings = get_settings()
 openai.api_key = settings.openai_api_key
@@ -41,15 +42,27 @@ Devolvé una lista JSON válida con uno o más productos.
             raise ValueError("La respuesta no es una lista de productos.")
 
         faltantes = []
+        nuevos_productos = []
+        duplicados = []
+
         for prod in productos:
-            if "nombre" not in prod or not prod["nombre"]:
+            nombre = prod.get("nombre", "").strip()
+            if not nombre:
                 faltantes.append("nombre")
+                continue
+
+            if get_producto_id(nombre):
+                duplicados.append(nombre)
+                continue
+
+            nuevos_productos.append(prod)
 
         return {
-            "ok": len(faltantes) == 0,
+            "ok": len(faltantes) == 0 and len(nuevos_productos) > 0,
             "faltantes": faltantes,
-            "datos": productos,
-            "tabla_destino": "Producto"
+            "datos": nuevos_productos,
+            "tabla_destino": "Producto",
+            "mensaje_info": f"Se ignoraron productos duplicados: {', '.join(duplicados)}" if duplicados else ""
         }
 
     except Exception as e:
