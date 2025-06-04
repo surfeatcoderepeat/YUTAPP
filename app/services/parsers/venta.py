@@ -3,7 +3,7 @@ import json
 from app.core.config import get_settings
 from app.db.database import SessionLocal
 from app.db.models import Producto, Cliente
-from app.utils.validations import get_product_id
+from app.utils.productos import get_producto_id
 
 settings = get_settings()
 openai.api_key = settings.openai_api_key
@@ -47,10 +47,10 @@ Respondé únicamente con un JSON. No incluyas explicaciones, ni encabezados tip
         # Normalización y validación
         errores = []
 
-        if "producto" not in datos or get_product_id(datos["producto"], productos) is None:
+        if "producto" not in datos or get_producto_id(datos["producto"], productos) is None:
             errores.append("producto inválido")
         else:
-            datos["id_producto"] = get_product_id(datos["producto"], productos)
+            datos["id_producto"] = get_producto_id(datos["producto"], productos)
         if "nombre_cliente" not in datos or datos["nombre_cliente"].lower() not in clientes:
             errores.append("cliente no registrado")
         if "volumen_litros" not in datos or not isinstance(datos["volumen_litros"], (int, float)):

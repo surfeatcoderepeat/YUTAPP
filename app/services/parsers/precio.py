@@ -3,7 +3,7 @@ import json
 from app.core.config import get_settings
 from app.db.database import SessionLocal
 from app.db.models import Producto
-from app.utils.validations import get_product_id
+from app.utils.productos import get_producto_id
 
 settings = get_settings()
 openai.api_key = settings.openai_api_key
@@ -66,7 +66,7 @@ NO devuelvas explicaciones ni markdown, solo un JSON válido.
                 faltantes.append(f"formato inválido: {formato}")
                 continue
 
-            id_producto = get_product_id(session, estilo)
+            id_producto = get_producto_id(session, estilo)
             if id_producto is None:
                 faltantes.append(f"producto no encontrado: {estilo}")
                 continue

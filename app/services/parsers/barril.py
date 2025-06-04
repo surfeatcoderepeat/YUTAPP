@@ -4,7 +4,7 @@ import json
 from app.core.config import get_settings
 from app.db.database import SessionLocal
 from app.db.models import Lote, Producto
-from app.utils.productos import get_product_id
+from app.utils.productos import get_producto_id
 from app.utils.lotes import lote_valido_para_producto
 
 settings = get_settings()
@@ -63,7 +63,7 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
 
         for barril in datos:
             nombre_producto = barril.get("producto", "").strip().lower()
-            barril["id_producto"] = get_product_id(nombre_producto) if nombre_producto else None
+            barril["id_producto"] = get_producto_id(nombre_producto) if nombre_producto else None
             if nombre_producto and barril["id_producto"] is None:
                 return {
                     "ok": False,

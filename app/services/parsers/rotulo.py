@@ -3,7 +3,7 @@ import json
 from app.core.config import get_settings
 from app.db.database import SessionLocal
 from app.db.models import Producto
-from app.utils.productos import get_product_id
+from app.utils.productos import get_producto_id
 
 settings = get_settings()
 openai.api_key = settings.openai_api_key
@@ -48,7 +48,7 @@ async def parse_rotulo(mensaje: str, user: str) -> dict:
         datos = json.loads(contenido)
 
         producto_nombre = datos.get("producto", "").lower()
-        id_producto = get_product_id(producto_nombre)
+        id_producto = get_producto_id(producto_nombre)
         if not id_producto:
             return {
                 "ok": False,

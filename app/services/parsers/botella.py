@@ -2,7 +2,7 @@
 import openai
 import json
 from app.core.config import get_settings
-from app.utils.productos import get_product_id
+from app.utils.productos import get_producto_id
 from app.utils.lotes import get_lote_id
 
 settings = get_settings()
@@ -52,7 +52,7 @@ Devolvé una lista JSON con un objeto por cada tipo de botella. No incluyas expl
             # Validar y convertir producto a id_producto
             producto = entry.get("producto")
             if producto:
-                id_producto = await get_product_id(producto)
+                id_producto = await get_producto_id(producto)
                 if id_producto is not None:
                     entry["id_producto"] = id_producto
                 else:
