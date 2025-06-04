@@ -29,13 +29,17 @@ PARSERS = {
     "Registrar precio": precio.parse_precio,
 }
 
-async def procesar_mensaje_general(mensaje: str, user: str) -> dict:
+async def procesar_mensaje_general(mensaje: str, user: str, forzar_clasificacion: str = None) -> dict:
     """
     Clasifica el mensaje, selecciona el parser correspondiente y retorna el resultado.
     Si no se reconoce el tipo, devuelve el set de opciones para que el usuario elija.
     """
     print(f"[DEBUG] Clasificando mensaje: {mensaje} (usuario: {user})")
-    clasificacion = await clasificar_mensaje(mensaje)
+    if forzar_clasificacion:
+        clasificacion = {"ok": True, "categoria": forzar_clasificacion}
+        print(f"[DEBUG] Clasificación forzada: {clasificacion}")
+    else:
+        clasificacion = await clasificar_mensaje(mensaje)
     print(f"[DEBUG] Tipo clasificado: {clasificacion}")
 
     categoria = clasificacion.get("categoria", "desconocido")
