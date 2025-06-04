@@ -14,8 +14,9 @@ CLASES_VALIDAS = [
     "Registrar nuevo fermentador",
     "Registrar nuevo rótulo",
     "Registrar registro fermentador",
-    "Registrar despacho",
-    "Registrar retorno de envases",
+    "Registrar despacho de cerveza",
+    "Registrar retorno de botellas",
+    "Registrar retorno de barriles",
     "Registrar venta",
     "Registrar precio"
 ]

@@ -15,16 +15,18 @@ from app.services.parsers import (
 from app.services.classifier import clasificar_mensaje
 
 PARSERS = {
-    "cliente": cliente,
-    "producto": producto,
-    "botella": botella,
-    "barril": barril,
-    "fermentador": fermentador,
-    "rotulo": rotulo,
-    "registro_fermentador": registro_fermentador,
-    "venta": venta,
-    "precio": precio,
-    # los operativos se agregan después
+    "Registrar nuevo cliente": cliente,
+    "Registrar nuevo producto": producto,
+    "Registrar nuevo barril": barril,
+    "Registrar nueva botella": botella,
+    "Registrar nuevo fermentador": fermentador,
+    "Registrar nuevo rótulo": rotulo,
+    "Registrar registro fermentador": registro_fermentador,
+    "Registrar despacho de cerveza": venta,  
+    "Registrar retorno de botellas": botella,
+    "Registrar retorno de barriles": barril,
+    "Registrar venta": venta,
+    "Registrar precio": precio,
 }
 
 async def procesar_mensaje_general(mensaje: str, user: str) -> dict:
@@ -33,10 +35,12 @@ async def procesar_mensaje_general(mensaje: str, user: str) -> dict:
     Si no se reconoce el tipo, devuelve el set de opciones para que el usuario elija.
     """
     print(f"[DEBUG] Clasificando mensaje: {mensaje} (usuario: {user})")
-    tipo = await clasificar_mensaje(mensaje)
+    clasificacion = await clasificar_mensaje(mensaje)
     print(f"[DEBUG] Tipo clasificado: {tipo}")
 
-    if tipo not in PARSERS:
+    categoria = clasificacion.get("categoria", "desconocido")
+
+    if categoria not in PARSERS:
         return {
             "ok": False,
             "error": None,
@@ -44,6 +48,6 @@ async def procesar_mensaje_general(mensaje: str, user: str) -> dict:
             "opciones": list(PARSERS.keys())
         }
 
-    parser = PARSERS[tipo]
+    parser = PARSERS[categoria]
     print(f"[DEBUG] Usando parser: {parser.__name__}")
     return parser(mensaje, user)
