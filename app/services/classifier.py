@@ -1,24 +1,64 @@
-# app/services/classifier.py
+# app/services/message_router.py
 
-from typing import Optional
+import openai
+from app.core.config import get_settings
 
-TIPOS_ENTIDAD = {
-    "cliente": ["cliente", "registrar cliente", "nuevo cliente"],
-    "barril": ["barril", "nuevo barril", "ingresó el barril"],
-    "movimiento_stock": ["salieron", "movimiento de stock", "entraron", "salida de stock"],
-    "venta": ["vendimos", "venta", "pedido", "cobramos"],
-    "precio": ["precio por litro", "precio"],
-    "fermentador": ["fermentador", "llenado de fermentador", "número de fermentador"],
-    "reporte_fermentador": ["fermentación", "reporte de fermentador", "estado del fermentador"],
-    "muestra": ["muestra tomada", "densidad", "antes de adicionar", "lote"],
-    "movimiento_botella": ["botellas", "botellas recicladas", "ingresaron botellas"],
-    "movimiento_rotulo": ["rótulos", "etiquetas", "rotulo", "se usaron"],
-    "movimiento_barril": ["barril volvió", "barril devuelto", "vacío del cliente"]
-}
+settings = get_settings()
+openai.api_key = settings.openai_api_key
 
-def clasificar_mensaje(mensaje: str) -> Optional[str]:
-    mensaje = mensaje.lower()
-    for tipo, patrones in TIPOS_ENTIDAD.items():
-        if any(p in mensaje for p in patrones):
-            return tipo
-    return None
+CLASES_VALIDAS = [
+    "Registrar nuevo cliente",
+    "Registrar nuevo producto",
+    "Registrar nuevo barril",
+    "Registrar nueva botella",
+    "Registrar nuevo fermentador",
+    "Registrar nuevo rótulo",
+    "Registrar registro fermentador",
+    "Registrar despacho",
+    "Registrar retorno de envases",
+    "Registrar venta",
+    "Registrar precio"
+]
+
+async def procesar_mensaje_general(mensaje: str, user: str) -> dict:
+    prompt = f"""
+Actuá como un sistema automático de interpretación de mensajes en el contexto de una cervecería artesanal. 
+Tu tarea es leer un mensaje recibido y determinar qué tipo de acción corresponde realizar, eligiendo una sola opción entre las siguientes:
+
+{chr(10).join([f"{i+1}. {opcion}" for i, opcion in enumerate(CLASES_VALIDAS)])}
+
+Si no estás seguro, respondé únicamente con "desconocido".
+
+Mensaje:
+\"\"\"{mensaje}\"\"\"
+
+Respondé solo con el nombre exacto de la opción correspondiente (por ejemplo, "Registrar nuevo cliente").
+"""
+
+    try:
+        response = await openai.ChatCompletion.acreate(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.0,
+        )
+
+        categoria = response.choices[0].message.content.strip()
+
+        if categoria not in CLASES_VALIDAS:
+            return {
+                "ok": False,
+                "error": "No se pudo determinar el tipo de mensaje.",
+                "categoria": "desconocido"
+            }
+
+        return {
+            "ok": True,
+            "categoria": categoria
+        }
+
+    except Exception as e:
+        return {
+            "ok": False,
+            "error": str(e),
+            "categoria": "desconocido"
+        }

@@ -1,0 +1,147 @@
+# app/services/parsers/parse_barril.py
+import openai
+import json
+from app.core.config import get_settings
+from app.db.database import SessionLocal
+from app.db.models import Lote, Producto
+
+settings = get_settings()
+openai.api_key = settings.openai_api_key
+
+async def parse_barril(mensaje: str, user: str) -> dict:
+    prompt = f"""
+Extraé la información de todos los barriles mencionados en el siguiente mensaje.
+
+📌 Para cada barril, devolvé un objeto con los siguientes campos:
+
+- id (número del barril)
+- volumen_litros (por ejemplo: 30, 50)
+- producto (nombre del estilo de cerveza, puede estar vacío si no se especifica)
+- lote (número de lote si estuviera presente, opcional)
+- estado (por ejemplo: lleno, vacío, limpio, sucio. Usá 'desconocido' si no se indica)
+- ubicacion (por ejemplo: fábrica, cámara, cliente, etc. Usá 'desconocida' si no se indica)
+
+🧠 Si hay varios barriles listados con diferentes volúmenes o estados, devolvé un array de objetos, uno por cada barril.
+
+📌 Ejemplo de mensaje:
+"Ingresaron los barriles 101, 102 y 103, todos vacíos, de 50 litros. El 104 y 105 están llenos con APA, lote 400."
+
+📌 Ejemplo de respuesta:
+[
+  {"id": 101, "volumen_litros": 50, "producto": "", "lote": null, "estado": "vacío", "ubicacion": "desconocida"},
+  {"id": 102, "volumen_litros": 50, "producto": "", "lote": null, "estado": "vacío", "ubicacion": "desconocida"},
+  {"id": 103, "volumen_litros": 50, "producto": "", "lote": null, "estado": "vacío", "ubicacion": "desconocida"},
+  {"id": 104, "volumen_litros": 50, "producto": "APA", "lote": 400, "estado": "lleno", "ubicacion": "desconocida"},
+  {"id": 105, "volumen_litros": 50, "producto": "APA", "lote": 400, "estado": "lleno", "ubicacion": "desconocida"}
+]
+
+Mensaje:
+\"\"\"{mensaje}\"\"\"
+
+Devolvé solo un JSON válido, sin explicaciones ni comentarios.
+"""
+
+    try:
+        response = await openai.ChatCompletion.acreate(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,
+        )
+
+        contenido = response.choices[0].message.content
+
+        # Limpia bloques de markdown tipo ```json ... ```
+        if contenido.strip().startswith("```"):
+            contenido = "\n".join(
+                line for line in contenido.strip().splitlines()
+                if not line.strip().startswith("```")
+            )
+
+        datos = json.loads(contenido)
+
+        # Mapear producto a id_producto
+        session = SessionLocal()
+        productos_cache = {}
+        try:
+            for barril in datos:
+                nombre_producto = barril.get("producto", "").strip().lower()
+                if nombre_producto:
+                    if nombre_producto not in productos_cache:
+                        producto_obj = session.query(Producto).filter(Producto.nombre.ilike(nombre_producto)).first()
+                        if not producto_obj:
+                            return {
+                                "ok": False,
+                                "error": f"Producto '{nombre_producto}' no encontrado en base de datos.",
+                                "datos": {}
+                            }
+                        productos_cache[nombre_producto] = producto_obj.id
+                    barril["id_producto"] = productos_cache[nombre_producto]
+                else:
+                    barril["id_producto"] = None
+        finally:
+            session.close()
+
+        # Validación de lotes existentes usando id_producto
+        session = SessionLocal()
+        lotes_invalidos = []
+        try:
+            for barril in datos:
+                if "lote" in barril and barril["lote"] is not None and barril.get("id_producto") is not None:
+                    lote_existente = session.query(Lote).filter(
+                        Lote.id == barril["lote"],
+                        Lote.id_producto == barril["id_producto"]
+                    ).first()
+                    if not lote_existente:
+                        lotes_invalidos.append((barril["lote"], barril["id_producto"]))
+        finally:
+            session.close()
+
+        if lotes_invalidos:
+            errores = []
+            session = SessionLocal()
+            try:
+                for lote, id_prod in lotes_invalidos:
+                    nombre_prod = session.query(Producto.nombre).filter(Producto.id == id_prod).scalar()
+                    lotes_disp = session.query(Lote.id).filter(Lote.id_producto == id_prod).all()
+                    lotes_ids = [l[0] for l in lotes_disp]
+                    errores.append(
+                        f"Lote {lote} no encontrado para producto '{nombre_prod}'. Lotes disponibles: {lotes_ids}"
+                    )
+            finally:
+                session.close()
+            return {
+                "ok": False,
+                "error": " - ".join(errores),
+                "datos": {}
+            }
+
+        if not isinstance(datos, list):
+            return {
+                "ok": False,
+                "error": "La respuesta del modelo no es una lista.",
+                "datos": {}
+            }
+
+        # Eliminar campo producto del resultado final
+        for barril in datos:
+            barril.pop("producto", None)
+
+        faltantes = []
+        for barril in datos:
+            for campo in ["id", "volumen_litros", "estado", "ubicacion", "id_producto"]:
+                if campo not in barril or barril[campo] is None:
+                    faltantes.append(f"{campo} en barril {barril.get('id', '?')}")
+
+        return {
+            "ok": len(faltantes) == 0,
+            "faltantes": faltantes,
+            "datos": datos,
+            "tabla_destino": "Barril"
+        }
+
+    except Exception as e:
+        return {
+            "ok": False,
+            "error": str(e),
+            "datos": {}
+        }

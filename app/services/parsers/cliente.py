@@ -8,7 +8,7 @@ openai.api_key = settings.openai_api_key
 
 async def parse_cliente(mensaje: str, user: str) -> dict:
     prompt = f"""
-Extraé los datos para registrar uno o más clientes a partir del siguiente mensaje.
+Extraé los datos para registrar uno o más clientes a partir del siguiente mensaje. El mensaje puede contener un inventario de clientes listados con nombre y CNPJ o CPF. Interpretá correctamente cada cliente y devolvé uno por cada línea, si aplica.
 
 Por cada cliente, devolvé un objeto con los siguientes campos:
 - nombre (nombre del cliente)
@@ -42,12 +42,29 @@ Mensaje:
 
         datos = json.loads(contenido)
 
-        faltantes = [campo for campo in ["nombre"] if campo not in datos or not datos[campo]]
+        if not isinstance(datos, list):
+            datos = [datos]
+
+        clientes_procesados = []
+        for cliente in datos:
+            nombre = cliente.get("nombre", "").strip().title()
+            if not nombre:
+                continue
+            cnpj_cpf = str(cliente.get("cnpj_cpf")) if "cnpj_cpf" in cliente else None
+            clientes_procesados.append({"nombre": nombre, "cnpj_cpf": cnpj_cpf})
+
+        if not clientes_procesados:
+            return {
+                "ok": False,
+                "faltantes": ["nombre"],
+                "datos": {},
+                "tabla_destino": "Cliente"
+            }
 
         return {
-            "ok": len(faltantes) == 0,
-            "faltantes": faltantes,
-            "datos": datos,
+            "ok": True,
+            "faltantes": [],
+            "datos": clientes_procesados,
             "tabla_destino": "Cliente"
         }
 

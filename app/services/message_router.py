@@ -1,44 +1,46 @@
 # app/services/message_router.py
+
 from app.services.parsers import (
-    parse_movimiento_stock,
-    parse_venta,
-    parse_cliente,
-    parse_barril,
-    parse_precio,
-    parse_fermentador,
-    parse_reporte_fermentador,
-    parse_muestra,
-    parse_movimiento_botella,
-    parse_movimiento_rotulo,
-    parse_movimiento_barril,
+    cliente,
+    producto,
+    botella,
+    barril,
+    fermentador,
+    rotulo,
+    registro_fermentador,
+    venta,
+    precio,
 )
 
 from app.services.classifier import clasificar_mensaje
 
-from app.services.classifier import clasificar_mensaje
-
 PARSERS = {
-    "movimiento_stock": parse_movimiento_stock,
-    "venta": parse_venta,
-    "cliente": parse_cliente,
-    "barril": parse_barril,
-    "precio": parse_precio,
-    "fermentador": parse_fermentador,
-    "reporte_fermentador": parse_reporte_fermentador,
-    "muestra": parse_muestra,
-    "movimiento_botella": parse_movimiento_botella,
-    "movimiento_rotulo": parse_movimiento_rotulo,
-    "movimiento_barril": parse_movimiento_barril,
+    "cliente": cliente,
+    "producto": producto,
+    "botella": botella,
+    "barril": barril,
+    "fermentador": fermentador,
+    "rotulo": rotulo,
+    "registro_fermentador": registro_fermentador,
+    "venta": venta,
+    "precio": precio,
+    # los operativos se agregan después
 }
 
 def procesar_mensaje_general(mensaje: str, user: str) -> dict:
     """
     Clasifica el mensaje, selecciona el parser correspondiente y retorna el resultado.
+    Si no se reconoce el tipo, devuelve el set de opciones para que el usuario elija.
     """
     tipo = clasificar_mensaje(mensaje)
-    
+
     if tipo not in PARSERS:
-        return {"ok": False, "error": f"Tipo de mensaje no reconocido: {tipo}"}
+        return {
+            "ok": False,
+            "error": None,
+            "mensaje": "No pude clasificar el mensaje. ¿Qué querés registrar?",
+            "opciones": list(PARSERS.keys())
+        }
 
     parser = PARSERS[tipo]
     return parser(mensaje, user)

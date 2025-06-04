@@ -1,27 +1,25 @@
-# app/services/parsers/parse_movimiento_rotulo.py
+# app/services/parsers/producto.py
 import openai
 import json
 from app.core.config import get_settings
+from app.db.database import SessionLocal
+from app.db.models import Producto
 
 settings = get_settings()
 openai.api_key = settings.openai_api_key
 
-async def parse_movimiento_rotulo(mensaje: str, user: str) -> dict:
+async def parse_producto(mensaje: str, user: str) -> dict:
     prompt = f"""
-Extraé los datos necesarios para registrar un movimiento de rótulos.
+Extraé la información para registrar uno o más productos a partir del siguiente mensaje.
 
-Campos requeridos:
-- tipo (entrada o salida)
-- cantidad (cantidad de rótulos, número entero)
-- producto (producto al que corresponden los rótulos, ej: 'IPA', 'Cream Ale', etc.)
-- responsable (usuario que lo envía: '{user}')
-- observacion (si hay, opcional)
-- mensaje_original (mensaje completo sin cambios)
+Por cada producto, obtené:
+- nombre (str, obligatorio)
+- descripción (str, opcional)
 
 Mensaje:
 \"\"\"{mensaje}\"\"\"
 
-Devolvé solo un JSON válido, sin explicaciones ni comentarios.
+Devolvé una lista JSON válida con uno o más productos.
 """
 
     try:
@@ -39,16 +37,21 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
                 if not line.strip().startswith("```")
             )
 
-        datos = json.loads(contenido)
+        productos = json.loads(contenido)
 
-        campos_obligatorios = ["tipo", "cantidad", "producto", "responsable", "mensaje_original"]
-        faltantes = [campo for campo in campos_obligatorios if campo not in datos or not datos[campo]]
+        if not isinstance(productos, list):
+            raise ValueError("La respuesta no es una lista de productos.")
+
+        faltantes = []
+        for prod in productos:
+            if "nombre" not in prod or not prod["nombre"]:
+                faltantes.append("nombre")
 
         return {
             "ok": len(faltantes) == 0,
             "faltantes": faltantes,
-            "datos": datos,
-            "tabla_destino": "MovimientoRotulo"
+            "datos": productos,
+            "tabla_destino": "Producto"
         }
 
     except Exception as e:

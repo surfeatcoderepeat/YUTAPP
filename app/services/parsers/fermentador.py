@@ -8,7 +8,7 @@ openai.api_key = settings.openai_api_key
 
 async def parse_fermentador(mensaje: str, user: str) -> dict:
     prompt = f"""
-Extraé los datos para registrar un fermentador a partir del siguiente mensaje.
+Extraé los datos para registrar un fermentador a partir del siguiente mensaje. Este proceso forma parte de la carga administrativa inicial de los 7 fermentadores existentes en la cervecería.
 
 Campos requeridos:
 - nombre (identificador del fermentador, por ejemplo "Fermentador 3")
@@ -25,6 +25,8 @@ Ejemplo de mensaje:
 - Devolvé el JSON sin explicaciones, sin comentarios, sin texto adicional.
 - No uses bloques de markdown como ```json.
 - Asegurate de que los nombres y estados estén bien escritos para evitar registros inconsistentes.
+
+Este registro será utilizado para habilitar los fermentadores en el sistema de gestión operativa.
 
 Mensaje:
 \"\"\"{mensaje}\"\"\"
@@ -48,9 +50,9 @@ Mensaje:
 
         datos = json.loads(contenido)
 
-        campos_obligatorios = ["numero", "producto", "lote", "mensaje_original"]
+        campos_obligatorios = ["nombre", "capacidad_litros", "estado_actual"]
         faltantes = [campo for campo in campos_obligatorios if campo not in datos or not datos[campo]]
-
+        datos["mensaje_original"] = mensaje
         return {
             "ok": len(faltantes) == 0,
             "faltantes": faltantes,
