@@ -20,7 +20,7 @@ CLASES_VALIDAS = [
     "Registrar precio"
 ]
 
-async def clasificar_mensaje(mensaje: str, user: str) -> dict:
+async def clasificar_mensaje(mensaje: str) -> dict:
     prompt = f"""
 Actuá como un sistema automático de interpretación y clasificación de mensajes en el contexto de una cervecería artesanal. 
 Tu tarea es leer un mensaje recibido y determinar qué tipo de acción corresponde realizar, eligiendo una sola opción entre las siguientes:
