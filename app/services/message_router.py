@@ -33,7 +33,7 @@ async def procesar_mensaje_general(mensaje: str, user: str) -> dict:
     print(f"[DEBUG] Clasificando mensaje: {mensaje} (usuario: {user})")
 
     clasificacion = await clasificar_mensaje(mensaje)
-    categorias = clasificacion.get("categorias", [])
+    categorias = clasificacion.get("respuesta", [])
     print(f"[DEBUG] Categorías detectadas: {categorias}")
 
     if not categorias:
