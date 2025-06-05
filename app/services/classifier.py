@@ -1,6 +1,7 @@
 # app/services/message_router.py
 
 import openai
+import json
 from app.core.config import get_settings
 
 settings = get_settings()
@@ -23,17 +24,22 @@ CLASES_VALIDAS = [
 
 async def clasificar_mensaje(mensaje: str) -> dict:
     prompt = f"""
-Actuá como un sistema automático de interpretación y clasificación de mensajes en el contexto de una cervecería artesanal. 
-Tu tarea es leer un mensaje recibido y determinar qué tipo de acción corresponde realizar, eligiendo una sola opción entre las siguientes:
+Actuá como un sistema inteligente de interpretación de mensajes en el contexto operativo de una cervecería artesanal.
 
-{chr(10).join([f"{i+1}. {opcion}" for i, opcion in enumerate(CLASES_VALIDAS)])}
+Tu tarea es leer un mensaje recibido por un bot en lenguaje natural y responder con una lista de todas las acciones que se deberían registrar en la base de datos, de acuerdo a lo que el mensaje describe.
 
-Si no estás seguro, respondé únicamente con "desconocido".
+Estas son las acciones válidas que podés detectar (no inventes nuevas):
+
+{chr(10).join([f"- {opcion}" for opcion in CLASES_VALIDAS])}
+
+Respondé únicamente con un array JSON. Por ejemplo:
+["Registrar nuevo barril", "Registrar registro fermentador"]
+
+Si no se identifica ninguna acción clara, respondé:
+["desconocido"]
 
 Mensaje:
 \"\"\"{mensaje}\"\"\"
-
-Respondé solo con el nombre exacto de la opción correspondiente (por ejemplo, "Registrar nuevo cliente").
 """
 
     try:
@@ -43,23 +49,32 @@ Respondé solo con el nombre exacto de la opción correspondiente (por ejemplo, 
             temperature=0.0,
         )
 
-        categoria = response.choices[0].message.content.strip()
-
-        if categoria not in CLASES_VALIDAS:
+        categorias = response.choices[0].message.content.strip()
+        try:
+            categorias = json.loads(categorias)
+        except:
             return {
                 "ok": False,
-                "error": "No se pudo determinar el tipo de mensaje.",
-                "categoria": "desconocido"
+                "error": "La respuesta no es un JSON válido.",
+                "categorias": []
+            }
+
+        categorias_validas = [c for c in categorias if c in CLASES_VALIDAS]
+        if not categorias_validas:
+            return {
+                "ok": False,
+                "error": "No se reconocieron acciones válidas.",
+                "categorias": []
             }
 
         return {
             "ok": True,
-            "categoria": categoria
+            "categorias": categorias_validas
         }
 
     except Exception as e:
         return {
             "ok": False,
             "error": str(e),
-            "categoria": "desconocido"
+            "categorias": []
         }

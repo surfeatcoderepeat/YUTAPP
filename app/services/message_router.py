@@ -29,29 +29,46 @@ PARSERS = {
     "Registrar precio": precio.parse_precio,
 }
 
-async def procesar_mensaje_general(mensaje: str, user: str, forzar_clasificacion: str = None) -> dict:
-    """
-    Clasifica el mensaje, selecciona el parser correspondiente y retorna el resultado.
-    Si no se reconoce el tipo, devuelve el set de opciones para que el usuario elija.
-    """
+async def procesar_mensaje_general(mensaje: str, user: str) -> dict:
     print(f"[DEBUG] Clasificando mensaje: {mensaje} (usuario: {user})")
-    if forzar_clasificacion:
-        clasificacion = {"ok": True, "categoria": forzar_clasificacion}
-        print(f"[DEBUG] Clasificación forzada: {clasificacion}")
-    else:
-        clasificacion = await clasificar_mensaje(mensaje)
-    print(f"[DEBUG] Tipo clasificado: {clasificacion}")
 
-    categoria = clasificacion.get("categoria", "desconocido")
+    clasificacion = await clasificar_mensaje(mensaje)
+    categorias = clasificacion.get("categorias", [])
+    print(f"[DEBUG] Categorías detectadas: {categorias}")
 
-    if categoria not in PARSERS:
+    if not categorias:
         return {
             "ok": False,
-            "error": None,
             "mensaje": "No pude clasificar el mensaje. ¿Qué querés registrar?",
             "opciones": list(PARSERS.keys())
         }
 
-    parser = PARSERS[categoria]
-    print(f"[DEBUG] Usando parser: {parser.__name__}")
-    return await parser(mensaje, user)
+    resultados = []
+    for categoria in categorias:
+        parser = PARSERS.get(categoria)
+        if parser:
+            print(f"[DEBUG] Usando parser: {parser.__name__}")
+            resultado = await parser(mensaje, user)
+            if resultado.get("ok"):
+                resultados.append((categoria, resultado))
+
+    if not resultados:
+        return {
+            "ok": False,
+            "mensaje": "No se pudo procesar ninguna acción.",
+            "categorias": categorias
+        }
+
+    if len(resultados) == 1:
+        return resultados[0][1]
+
+    datos_combinados = {}
+    for categoria, resultado in resultados:
+        datos_combinados[categoria] = resultado["datos"]
+
+    return {
+        "ok": True,
+        "tabla_destino": "multiple",
+        "datos": datos_combinados,
+        "mensaje_usuario": "✅ Se procesaron múltiples acciones."
+    }
