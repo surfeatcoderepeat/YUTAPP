@@ -37,9 +37,13 @@ async def procesar_mensaje_general(mensaje: str, user: str) -> dict:
     clasificacion = await clasificar_mensaje(mensaje)
     try:
         raw = clasificacion.get("respuesta") or []
+        print(f"[DEBUG] Tipo de respuesta: {type(raw)}")
+        print(f"[DEBUG] Contenido crudo de la respuesta: {raw}")
         categorias = json.loads(raw) if isinstance(raw, str) else raw
+        print(f"[DEBUG] Resultado de json.loads: {categorias}")
     except Exception as e:
         print(f"[ERROR] No se pudo parsear la respuesta de OpenAI: {e}")
+        print(f"[DEBUG] raw que falló el parseo: {raw}")
         categorias = []
     print(f"[DEBUG] Categorías detectadas: {categorias}")
 
