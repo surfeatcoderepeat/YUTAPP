@@ -54,18 +54,29 @@ Mensaje:
         print("[DEBUG] Respuesta bruta de OpenAI:")
         print(response.choices[0].message.content)
 
-        categorias = response.choices[0].message.content.strip()
+        import re
 
-        # Limpiar delimitadores Markdown si están presentes
-        if categorias.startswith("```"):
-            categorias = categorias.split("```")[1].strip()
+        raw_content = response.choices[0].message.content
+        print("[DEBUG] Contenido bruto:", raw_content)
 
-        try:
-            categorias = json.loads(categorias)
-        except:
+        # Buscar un array JSON en la respuesta con regex
+        match = re.search(r'\[[^\]]+\]', raw_content)
+        if match:
+            try:
+                categorias = json.loads(match.group())
+                print("[DEBUG] Lista JSON detectada:", categorias)
+            except json.JSONDecodeError as e:
+                print("[ERROR] Fallo al parsear JSON:", e)
+                return {
+                    "ok": False,
+                    "error": f"JSON inválido: {e}",
+                    "categorias": []
+                }
+        else:
+            print("[ERROR] No se encontró lista JSON en la respuesta.")
             return {
                 "ok": False,
-                "error": "La respuesta no es un JSON válido.",
+                "error": "No se encontró una lista JSON en la respuesta.",
                 "categorias": []
             }
 
