@@ -1,7 +1,7 @@
 # app/interfaces/parsers/producto.py
 import json
 from app.infrastructure.config import get_settings
-from app.infrastructure.repositories.producto_repo import get_producto_by_name
+from app.infrastructure.repositories.producto_repo import ProductoRepository
 from app.services.llm.openai_client import OpenAIClient
 
 settings = get_settings()
@@ -34,7 +34,7 @@ Devolvé un único objeto JSON con dos claves: "nombre" (str, obligatorio) y "de
         if not nombre:
             return {"ok": False, "error": "El producto no tiene nombre."}
 
-        if await get_producto_by_name(nombre):
+        if ProductoRepository().exists(nombre):
             return {"ok": False, "error": f"El producto '{nombre}' ya existe."}
 
         return {
