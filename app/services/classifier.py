@@ -48,6 +48,8 @@ Mensaje:
             messages=[{"role": "user", "content": prompt}],
             temperature=0.0,
         )
+        print("[DEBUG] Respuesta bruta de OpenAI:")
+        print(response.choices[0].message.content)
 
         categorias = response.choices[0].message.content.strip()
         try:
