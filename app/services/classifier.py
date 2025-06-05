@@ -24,19 +24,22 @@ CLASES_VALIDAS = [
 
 async def clasificar_mensaje(mensaje: str) -> dict:
     prompt = f"""
-Actuá como un sistema inteligente de interpretación de mensajes en el contexto operativo de una cervecería artesanal.
+Actuá como un sistema inteligente que interpreta mensajes en lenguaje natural dentro del contexto operativo de una cervecería artesanal. Tu tarea es clasificar el mensaje recibido y responder con una lista de las acciones que se deben registrar en la base de datos.
 
-Tu tarea es leer un mensaje recibido por un bot en lenguaje natural y responder con una lista de todas las acciones que se deberían registrar en la base de datos, de acuerdo a lo que el mensaje describe.
-
-Estas son las acciones válidas que podés detectar (no inventes nuevas):
-
+Estas son las únicas acciones válidas (no inventes nuevas):
 {chr(10).join([f"- {opcion}" for opcion in CLASES_VALIDAS])}
 
-Respondé únicamente con un array JSON. Por ejemplo:
-["Registrar nuevo barril", "Registrar registro fermentador"]
+⚠️ Instrucciones:
+- No repitas acciones por cantidad de ítems (ej. varios barriles = una acción).
+- Si el mensaje describe que se embarrila cerveza (del fermentador a barriles), devolvé:
+  ["Registrar nuevo barril", "Registrar registro fermentador"]
+- Si se describe un despacho de barriles a cliente, devolvé:
+  ["Registrar venta", "Registrar despacho de cerveza"]
+- Si no hay acciones claras, devolvé: ["desconocido"]
 
-Si no se identifica ninguna acción clara, respondé:
-["desconocido"]
+Ejemplo:
+Mensaje: "Embarrilamos lote 33 en 5 barriles"
+Respuesta: ["Registrar nuevo barril", "Registrar registro fermentador"]
 
 Mensaje:
 \"\"\"{mensaje}\"\"\"
@@ -52,6 +55,11 @@ Mensaje:
         print(response.choices[0].message.content)
 
         categorias = response.choices[0].message.content.strip()
+
+        # Limpiar delimitadores Markdown si están presentes
+        if categorias.startswith("```"):
+            categorias = categorias.split("```")[1].strip()
+
         try:
             categorias = json.loads(categorias)
         except:
@@ -60,6 +68,8 @@ Mensaje:
                 "error": "La respuesta no es un JSON válido.",
                 "categorias": []
             }
+
+        categorias = list(set(categorias))
 
         categorias_validas = [c for c in categorias if c in CLASES_VALIDAS]
         if not categorias_validas:
