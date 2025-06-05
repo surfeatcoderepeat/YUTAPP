@@ -18,10 +18,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     message_text = update.message.text
 
+    print("[telegram_bot] 📥 Mensaje recibido:", message_text)
     await context.bot.send_message(chat_id=chat_id, text=f"📩 Recibido, {user}. Procesando tu mensaje...")
 
     resultado = await procesar_mensaje_general(message_text, user)
-    print("[DEBUG] Resultado procesado:", resultado)
+    print("[telegram_bot] 🔍 Resultado procesado:", resultado)
 
     if not resultado.get("ok", False):
         if "error" in resultado:
@@ -31,16 +32,20 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 chat_id=chat_id,
                 text="🤔 No pude clasificar tu mensaje. Podés intentar redactarlo de otra forma."
             )
+        print("[telegram_bot] ⚠️ Error o mensaje no clasificable:", resultado)
         return
 
     datos = resultado["datos"]
     tabla_destino = resultado.get("tabla_destino")
+    print("[telegram_bot] 💾 Guardando en base de datos:", datos, "→ Tabla:", tabla_destino)
     guardado = await guardar_en_base_de_datos(tabla_destino, datos, chat_id, context)
     if not guardado:
+        print("[telegram_bot] ❌ Falló guardado en base de datos.")
         return
 
     mensaje_usuario = resultado.get("mensaje_usuario")
     if mensaje_usuario:
+        print("[telegram_bot] 📤 Enviando confirmación al usuario.")
         await context.bot.send_message(chat_id=chat_id, text=mensaje_usuario)
         return
 
@@ -53,6 +58,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         texto_confirmacion = "\n".join(
             [f"- {k.replace('_', ' ').capitalize()}: {v}" for k, v in datos.items() if k != "mensaje_original"]
         )
+    print("[telegram_bot] 📤 Enviando confirmación al usuario.")
     await context.bot.send_message(
         chat_id=chat_id,
         text=f"✅ Registro exitoso:\n{texto_confirmacion}"
@@ -71,13 +77,13 @@ async def start_bot():
                 handle_message
             )
         )
-        print("🤖 Bot iniciado y escuchando mensajes...")
+        print("[telegram_bot] 🤖 Bot iniciado y configurando handlers...")
 
         # Bloque alternativo compatible con Railway
         await application.initialize()
         await application.start()
-        print("✅ Bot activo y escuchando (start_polling)")
+        print("[telegram_bot] ✅ Bot activo y escuchando (start_polling)")
         await application.updater.start_polling()
 
     except Exception as e:
-        print(f"❌ Error al iniciar el bot: {e}")
+        print("[telegram_bot] ❌ Error al iniciar el bot:", e)

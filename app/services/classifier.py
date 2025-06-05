@@ -51,20 +51,20 @@ Mensaje:
             messages=[{"role": "user", "content": prompt}],
             temperature=0.0,
         )
-        print("[DEBUG] Respuesta bruta de OpenAI:")
-        print(response.choices[0].message.content)
+        print("[DEBUG][classifier] Respuesta bruta de OpenAI:")
+        print("[DEBUG][classifier]", response.choices[0].message.content)
 
         import re
 
         raw_content = response.choices[0].message.content
-        print("[DEBUG] Contenido bruto:", raw_content)
+        print("[DEBUG][classifier] Contenido bruto:", raw_content)
 
         # Buscar un array JSON en la respuesta con regex
         match = re.search(r'\[[^\]]+\]', raw_content)
         if match:
             try:
                 categorias = json.loads(match.group())
-                print("[DEBUG] Lista JSON detectada:", categorias)
+                print("[DEBUG][classifier] Lista JSON detectada:", categorias)
                 categorias = list(set(categorias))
                 categorias_validas = [c for c in categorias if c in CLASES_VALIDAS]
                 if not categorias_validas:
@@ -80,10 +80,10 @@ Mensaje:
                     "categorias": categorias_validas,
                     "respuesta": categorias  # nuevo campo para trazabilidad
                 }
-                print("[DEBUG] Retornando resultado:", result)
+                print("[DEBUG][classifier] Retornando resultado:", result)
                 return result
             except json.JSONDecodeError as e:
-                print("[ERROR] Fallo al parsear JSON:", e)
+                print("[ERROR][classifier] Fallo al parsear JSON:", e)
                 return {
                     "ok": False,
                     "error": f"JSON inválido: {e}",
@@ -91,7 +91,7 @@ Mensaje:
                     "respuesta": None  # para mantener estructura consistente
                 }
         else:
-            print("[ERROR] No se encontró lista JSON en la respuesta.")
+            print("[ERROR][classifier] No se encontró lista JSON en la respuesta.")
             return {
                 "ok": False,
                 "error": "No se encontró una lista JSON en la respuesta.",
@@ -100,7 +100,7 @@ Mensaje:
             }
 
     except Exception as e:
-        print("[ERROR] Excepción inesperada:", e)
+        print("[ERROR][classifier] Excepción inesperada:", e)
         return {
             "ok": False,
             "error": str(e),

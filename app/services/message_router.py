@@ -32,28 +32,27 @@ PARSERS = {
 }
 
 async def procesar_mensaje_general(mensaje: str, user: str) -> dict:
-    print(f"[DEBUG] Clasificando mensaje: {mensaje} (usuario: {user})")
+    print(f"[DEBUG][router] Clasificando mensaje: {mensaje} (usuario: {user})")
 
     clasificacion = await clasificar_mensaje(mensaje)
 
     try:
         raw = clasificacion.get("respuesta", None)
-        print(f"[DEBUG] Respuesta bruta de OpenAI: {raw}")
-        print(f"[DEBUG] Tipo de respuesta: {type(raw)}")
+        print(f"[DEBUG][router] Respuesta bruta de OpenAI: {raw} (tipo: {type(raw)})")
 
         if isinstance(raw, str):
             categorias = json.loads(raw)
         elif isinstance(raw, list):
             categorias = raw
         else:
-            print(f"[ERROR] Tipo inesperado de respuesta: {type(raw)}")
+            print(f"[ERROR][router] Tipo inesperado de respuesta: {type(raw)}")
             categorias = []
 
     except Exception as e:
-        print(f"[ERROR] No se pudo parsear la respuesta de OpenAI: {e}")
+        print(f"[ERROR][router] No se pudo parsear la respuesta de OpenAI: {e}")
         categorias = []
 
-    print(f"[DEBUG] Categorías detectadas: {categorias}")
+    print(f"[DEBUG][router] Categorías detectadas: {categorias}")
 
     if not categorias:
         return {
@@ -67,7 +66,7 @@ async def procesar_mensaje_general(mensaje: str, user: str) -> dict:
     for categoria in categorias:
         parser = PARSERS.get(categoria)
         if parser:
-            print(f"[DEBUG] Usando parser: {parser.__name__}")
+            print(f"[DEBUG][router] Usando parser para '{categoria}': {parser.__name__}")
             resultado = await parser(mensaje, user)
             if resultado.get("ok"):
                 resultados.append((categoria, resultado))
@@ -76,7 +75,7 @@ async def procesar_mensaje_general(mensaje: str, user: str) -> dict:
                     "categoria": categoria,
                     "mensaje": resultado.get("mensaje", "Fallo sin mensaje.")
                 })
-                print(f"[ERROR] Falló parser para {categoria}: {resultado.get('mensaje')}")
+                print(f"[ERROR][router] Falló parser para '{categoria}': {resultado.get('mensaje')}")
 
     if not resultados:
         return {

@@ -69,8 +69,10 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
 
         for barril in datos:
             nombre_producto = barril.get("producto", "").strip().lower()
+            print(f"[parse_barril] Producto detectado: '{nombre_producto}'")
             if nombre_producto:
                 barril["id_producto"] = get_producto_id(nombre_producto)
+                print(f"[parse_barril] ID de producto obtenido para '{nombre_producto}': {barril['id_producto']}")
                 if barril["id_producto"] is None:
                     return {
                         "ok": False,
@@ -82,7 +84,9 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
 
         for barril in datos:
             if "lote" in barril and barril["lote"] is not None and barril.get("id_producto") is not None:
+                print(f"[parse_barril] Intentando obtener ID de lote para producto '{barril.get('producto')}' y lote '{barril['lote']}'")
                 lote_id = get_lote_id(barril["lote"], barril["id_producto"])
+                print(f"[parse_barril] ID de lote obtenido: {lote_id}")
                 if lote_id is None:
                     return {
                         "ok": False,
@@ -120,6 +124,8 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
             volumen_total += barril.get("volumen_litros", 0)
 
         if id_lote is None or id_producto is None:
+            print("[parse_barril] No se pudo determinar id_lote o id_producto.")
+            print(f"[parse_barril] Datos actuales: {json.dumps(datos, indent=2)}")
             return {
                 "ok": False,
                 "error": "No se pudo determinar id_lote o id_producto para el registro de fermentador.",

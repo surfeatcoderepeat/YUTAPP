@@ -48,11 +48,13 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
                 if not line.strip().startswith("```")
             )
 
-        print(f"[DEBUG] Contenido limpio: {contenido}")
+        print(f"[parse_fermentador] JSON recibido de OpenAI: {contenido}")
         datos = json.loads(contenido)
+        print(f"[parse_fermentador] Datos decodificados: {datos}")
 
         if "responsable" not in datos or not datos["responsable"]:
             datos["responsable"] = user
+        print(f"[parse_fermentador] Responsable asignado: {datos['responsable']}")
 
         if "etapa" in datos:
             datos["tipo_evento"] = datos.pop("etapa")
@@ -66,6 +68,7 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
                 datos["id_producto"] = get_producto_id(datos["id_producto"])
             except ValueError as e:
                 errores.append(str(e))
+        print(f"[parse_fermentador] Producto ID: {datos.get('id_producto')}")
 
         # Lote
         if "id_lote" in datos:
@@ -83,14 +86,17 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
                 )
                 datos["id_lote"] = nuevo_id
                 datos["mensaje_lote_creado"] = f"✅ Lote {nuevo_id} creado automáticamente."
+        print(f"[parse_fermentador] Lote ID: {datos.get('id_lote')}")
 
         # Fermentador
         if "id_fermentador" in datos and not existe_fermentador(datos["id_fermentador"]):
             errores.append(f"Fermentador {datos['id_fermentador']} no encontrado")
+        print(f"[parse_fermentador] Fermentador ID: {datos.get('id_fermentador')}")
 
         # Fecha
         if "fecha" not in datos or not datos["fecha"] or datos["fecha"].strip().lower() == "hoy":
             datos["fecha"] = datetime.now().strftime("%Y-%m-%d")
+        print(f"[parse_fermentador] Fecha usada: {datos.get('fecha')}")
 
         # No eliminamos el campo 'observaciones' para que quede en datos
 
@@ -122,6 +128,7 @@ Devolvé solo un JSON válido, sin explicaciones ni comentarios.
                 f"(lote {lote}), etapa: {estado}, registrado por {responsable}."
             )
 
+        print(f"[parse_fermentador] Respuesta final: {respuesta}")
         return respuesta
 
     except Exception as e:
