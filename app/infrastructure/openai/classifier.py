@@ -2,7 +2,7 @@
 
 import openai
 import json
-from app.core.config import get_settings
+from app.infrastructure.config import get_settings
 
 settings = get_settings()
 openai.api_key = settings.openai_api_key

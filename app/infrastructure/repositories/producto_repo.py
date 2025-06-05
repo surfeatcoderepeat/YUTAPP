@@ -1,4 +1,4 @@
-from app.infrastructure.db.session import get_db
+from app.infrastructure.db.base import get_db
 from app.infrastructure.db.models import Producto
 from .producto_repo import create_producto, get_producto_by_nombre
 from sqlalchemy.orm import Session
