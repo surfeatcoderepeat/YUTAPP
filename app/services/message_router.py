@@ -43,6 +43,7 @@ async def procesar_mensaje_general(mensaje: str, user: str) -> dict:
             "opciones": list(PARSERS.keys())
         }
 
+    errores = []
     resultados = []
     for categoria in categorias:
         parser = PARSERS.get(categoria)
@@ -51,20 +52,30 @@ async def procesar_mensaje_general(mensaje: str, user: str) -> dict:
             resultado = await parser(mensaje, user)
             if resultado.get("ok"):
                 resultados.append((categoria, resultado))
+            else:
+                errores.append({
+                    "categoria": categoria,
+                    "mensaje": resultado.get("mensaje", "Fallo sin mensaje.")
+                })
+                print(f"[ERROR] Falló parser para {categoria}: {resultado.get('mensaje')}")
 
     if not resultados:
         return {
             "ok": False,
             "mensaje": "No se pudo procesar ninguna acción.",
+            "errores": errores,
             "categorias": categorias
         }
 
     if len(resultados) == 1:
-        return resultados[0][1]
+        categoria, resultado = resultados[0]
+        resultado["mensaje_usuario"] = f"✅ Acción registrada como: {categoria}"
+        return resultado
 
     datos_combinados = {}
     for categoria, resultado in resultados:
-        datos_combinados[categoria] = resultado["datos"]
+        if "datos" in resultado:
+            datos_combinados[categoria] = resultado["datos"]
 
     return {
         "ok": True,
