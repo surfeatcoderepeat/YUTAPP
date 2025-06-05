@@ -14,6 +14,8 @@ from app.services.parsers import (
 
 from app.services.classifier import clasificar_mensaje
 
+import json
+
 PARSERS = {
     "Registrar nuevo cliente": cliente.parse_cliente,
     "Registrar nuevo producto": producto.parse_producto,
@@ -33,7 +35,12 @@ async def procesar_mensaje_general(mensaje: str, user: str) -> dict:
     print(f"[DEBUG] Clasificando mensaje: {mensaje} (usuario: {user})")
 
     clasificacion = await clasificar_mensaje(mensaje)
-    categorias = clasificacion.get("respuesta", [])
+    try:
+        raw = clasificacion.get("respuesta") or []
+        categorias = json.loads(raw) if isinstance(raw, str) else raw
+    except Exception as e:
+        print(f"[ERROR] No se pudo parsear la respuesta de OpenAI: {e}")
+        categorias = []
     print(f"[DEBUG] Categorías detectadas: {categorias}")
 
     if not categorias:
