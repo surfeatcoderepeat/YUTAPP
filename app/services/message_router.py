@@ -35,16 +35,24 @@ async def procesar_mensaje_general(mensaje: str, user: str) -> dict:
     print(f"[DEBUG] Clasificando mensaje: {mensaje} (usuario: {user})")
 
     clasificacion = await clasificar_mensaje(mensaje)
+
     try:
-        raw = clasificacion.get("respuesta") or []
+        raw = clasificacion.get("respuesta", None)
+        print(f"[DEBUG] Respuesta bruta de OpenAI: {raw}")
         print(f"[DEBUG] Tipo de respuesta: {type(raw)}")
-        print(f"[DEBUG] Contenido crudo de la respuesta: {raw}")
-        categorias = json.loads(raw) if isinstance(raw, str) else raw
-        print(f"[DEBUG] Resultado de json.loads: {categorias}")
+
+        if isinstance(raw, str):
+            categorias = json.loads(raw)
+        elif isinstance(raw, list):
+            categorias = raw
+        else:
+            print(f"[ERROR] Tipo inesperado de respuesta: {type(raw)}")
+            categorias = []
+
     except Exception as e:
         print(f"[ERROR] No se pudo parsear la respuesta de OpenAI: {e}")
-        print(f"[DEBUG] raw que falló el parseo: {raw}")
         categorias = []
+
     print(f"[DEBUG] Categorías detectadas: {categorias}")
 
     if not categorias:
