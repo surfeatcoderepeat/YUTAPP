@@ -8,6 +8,10 @@ app = FastAPI()
 def read_root():
     return {"message": "Bot de Telegram activo"}
 
-@app.on_event("startup")
-async def startup_event():
+from fastapi import FastAPI, Lifespan
+
+async def lifespan(app: FastAPI):
     asyncio.create_task(start_bot())
+    yield
+
+app = FastAPI(lifespan=lifespan)

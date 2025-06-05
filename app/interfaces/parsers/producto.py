@@ -19,7 +19,8 @@ Devolvé un único objeto JSON con dos claves: "nombre" (str, obligatorio) y "de
 
     try:
         response = await client.extract_json(prompt)
-
+        if not response or not response.choices:
+            raise ValueError("No se recibió una respuesta válida del cliente LLM.")
         contenido = response.choices[0].message.content
 
         if contenido.strip().startswith("```"):
