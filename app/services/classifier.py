@@ -65,39 +65,45 @@ Mensaje:
             try:
                 categorias = json.loads(match.group())
                 print("[DEBUG] Lista JSON detectada:", categorias)
+                categorias = list(set(categorias))
+                categorias_validas = [c for c in categorias if c in CLASES_VALIDAS]
+                if not categorias_validas:
+                    return {
+                        "ok": False,
+                        "error": "No se reconocieron acciones válidas.",
+                        "categorias": [],
+                        "respuesta": categorias  # nuevo campo para trazabilidad
+                    }
+
+                result = {
+                    "ok": True,
+                    "categorias": categorias_validas,
+                    "respuesta": categorias  # nuevo campo para trazabilidad
+                }
+                print("[DEBUG] Retornando resultado:", result)
+                return result
             except json.JSONDecodeError as e:
                 print("[ERROR] Fallo al parsear JSON:", e)
                 return {
                     "ok": False,
                     "error": f"JSON inválido: {e}",
-                    "categorias": []
+                    "categorias": [],
+                    "respuesta": None  # para mantener estructura consistente
                 }
         else:
             print("[ERROR] No se encontró lista JSON en la respuesta.")
             return {
                 "ok": False,
                 "error": "No se encontró una lista JSON en la respuesta.",
-                "categorias": []
+                "categorias": [],
+                "respuesta": None
             }
-
-        categorias = list(set(categorias))
-
-        categorias_validas = [c for c in categorias if c in CLASES_VALIDAS]
-        if not categorias_validas:
-            return {
-                "ok": False,
-                "error": "No se reconocieron acciones válidas.",
-                "categorias": []
-            }
-
-        return {
-            "ok": True,
-            "categorias": categorias_validas
-        }
 
     except Exception as e:
+        print("[ERROR] Excepción inesperada:", e)
         return {
             "ok": False,
             "error": str(e),
-            "categorias": []
+            "categorias": [],
+            "respuesta": None
         }
